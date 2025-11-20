@@ -63,6 +63,11 @@ export default function Home() {
     });
   }
 
+  function checkedProduct(upc:string) {
+    const produit = document.getElementById(upc);
+    produit?.classList.add('bg-green-600', 'opacity-50');
+  }
+
   return (
     <div className="">
       <main className="">
@@ -93,11 +98,12 @@ export default function Home() {
             <p className="text-center">Quantité reservé</p>
             <p className="text-center">Quantité à approvisionner</p>
             <p className="text-left">Bin</p>
+            <p className="text-center">Statut</p>
           </div>
           {
             productList.map((product:Product, index:number) => {
               return (
-                <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full item--${index}`}>
+                <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full item--${index}`} id={product.upc}>
                   <div className="text-sm font-semibold mb-2">
                     <h2>{product.name}</h2>
                   </div>
@@ -114,6 +120,9 @@ export default function Home() {
                         )
                       })
                     }
+                  </div>
+                  <div className="flex justify-center">
+                    <button className="py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto" onClick={ () => checkedProduct(product.upc) }>Done</button>
                   </div>
                 </div>
               )
