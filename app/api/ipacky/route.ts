@@ -1,7 +1,18 @@
 import { NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
+
+    const { searchParams } = new URL(req.url);
+    const upc = searchParams.get("upc") || "";
+
+    if(!upc) {
+      return NextResponse.json(
+        { error: "Missing UPC parameter" },
+        { status: 400 }
+      );
+    }
+
     const user = process.env.IPACKY_USER_NAME || "";
     const password = process.env.IPACKY_PASSWORD || "";
 
@@ -14,7 +25,7 @@ export async function GET() {
 
     const token = Buffer.from(`${user}:${password}`).toString("base64");
 
-    const response = await fetch(`${process.env.BASE_URL}?barcode=8718503824222&type=upc`, {
+    const response = await fetch(`${process.env.BASE_URL}?barcode=${upc}&type=upc`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
