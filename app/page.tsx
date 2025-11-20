@@ -87,6 +87,7 @@ export default function Home() {
         <section className="py-2">
           <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full">
             <p>Information du produit</p>
+            <p className="text-center">SKU</p>
             <p className="text-center">UPC</p>
             <p className="text-center">Quantité Disponible</p>
             <p className="text-center">Quantité reservé</p>
@@ -99,8 +100,8 @@ export default function Home() {
                 <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full item--${index}`}>
                   <div className="text-sm font-semibold mb-2">
                     <h2>{product.name}</h2>
-                    <small>{product.sku}</small>
                   </div>
+                  <p className="text-center">{product.sku}</p>
                   <p className="text-center">{product.upc}</p>
                   <p className="text-center">{product.quantityAvailable}</p>
                   <p className="text-center">{product.quantityOnHand}</p>
