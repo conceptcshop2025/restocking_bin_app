@@ -3,5 +3,7 @@ export type Product = {
   upc: string;
   name: string;
   quantityAvailable: number;
+  quantityOnHand: number;
+  quantityToReStock: number;
   binLocation: string[] | string;
 }
