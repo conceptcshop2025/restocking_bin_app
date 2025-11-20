@@ -25,12 +25,23 @@ export default function Home() {
     }
   }, [debouncedUpc]);
 
+  useEffect(() => {
+    if(productList.length === 0) return;
+
+    const sorted = [...productList].sort((a, b) => {
+      const locA = a.binLocation[0];
+      const locB = b.binLocation[0];
+      return locA.localeCompare(locB);
+    });
+
+    setProductList(sorted);
+  }, [productList.length]);
+
   function getData(upc:string) {
     const baseUrl = `/api/ipacky?upc=${upc}`;
     fetch(baseUrl)
     .then(response => response.json())
     .then(data => {
-      console.log('Success:', data);
       const newProduct: Product = {
         sku: data.data[0].sku || "N/A",
         upc: data.data[0].barcode || "N/A",
@@ -88,7 +99,7 @@ export default function Home() {
                     {
                       (Array.isArray(product.binLocation) ? product.binLocation : [product.binLocation]).map((location: string, idx: number) => {
                         return (
-                          <span key={idx} className="p-2 bg-neutral-200 inline-block h-fit">{location}</span>
+                          <span key={idx} className="p-2 bg-neutral-200 inline-block h-fit rounded-md">{location}</span>
                         )
                       })
                     }
