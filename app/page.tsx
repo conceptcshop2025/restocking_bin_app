@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { Product } from "./types/type";
 
 export default function Home() {
-  const [upc, setUpc] = useState("");
-  const [debouncedUpc, setDebouncedUpc] = useState("");
+  const [upc, setUpc] = useState<string>("");
+  const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
 
   useEffect(() => {
@@ -28,11 +28,15 @@ export default function Home() {
     if(productList.length === 0) return;
 
     const sorted = [...productList].sort((a, b) => {
-      const locA = a.binLocation[0];
+      let locA = a.binLocation[0];
       const locB = b.binLocation[0];
+
+      if (locA === undefined) {
+        locA = '999.99.99';
+      }
+
       return locA.localeCompare(locB);
     });
-    console.log(sorted);
     setProductList(sorted);
   }, [productList.length]);
 
@@ -63,17 +67,15 @@ export default function Home() {
     });
   }
 
-  function checkedProduct(upc:string) {
-    const produit = document.getElementById(upc);
-    produit?.classList.add('bg-green-600', 'opacity-50');
+  function checkedProduct(element:HTMLElement) {
+    element.closest('.product-card')?.classList.add('bg-green-600', 'opacity-50');
   }
 
   return (
-    <div className="">
-      <main className="">
+    <div>
+      <main>
         <header className="flex justify-center p-2">
           <Image
-            className=""
             src="/concept-c-logo.webp"
             alt="Concept C logo"
             width={300}
@@ -85,7 +87,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold mb-4">Liste des produits</h1>
           <div className="form-list flex justify-center gap-4 p-2 bg-gray-100 w-full">
             <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
-            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2" value={upc} onChange={(e) => setUpc(e.target.value)} />
+            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2" value={upc} onChange={(e) => setUpc(e.target.value)} />
             <button className="add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer hidden">Ajouter produit à la liste</button>
           </div>
         </section>
@@ -97,14 +99,14 @@ export default function Home() {
             <p className="text-center">Quantité Disponible</p>
             <p className="text-center">Quantité reservé</p>
             <p className="text-center">Quantité à approvisionner</p>
-            <p className="text-left">Bin</p>
+            <p className="text-center">Bin</p>
             <p className="text-center">Statut</p>
           </div>
           {
             productList.map((product:Product, index:number) => {
               return (
-                <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full item--${index}`} id={product.upc}>
-                  <div className="text-sm font-semibold mb-2">
+                <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index}`} id={product.upc}>
+                  <div className="text-sm font-semibold">
                     <h2>{product.name}</h2>
                   </div>
                   <p className="text-center">{product.sku}</p>
@@ -114,15 +116,18 @@ export default function Home() {
                   <p className="text-center">{product.quantityToReStock}</p>
                   <div className="flex justify-start gap-4 flex-wrap">
                     {
-                      (Array.isArray(product.binLocation) ? product.binLocation : [product.binLocation]).map((location: string, idx: number) => {
-                        return (
-                          <span key={idx} className="p-2 bg-neutral-200 inline-block h-fit rounded-md">{location}</span>
-                        )
-                      })
+                      product.binLocation.length > 0 ? (
+                        (Array.isArray(product.binLocation) ? product.binLocation : [product.binLocation]).map((location: string, idx: number) => {
+                          return (
+                            <span key={idx} className="p-2 bg-neutral-200 inline-block h-fit rounded-md">{location}</span>
+                          )
+                        })
+                      ) : <p>Il n'y a pas de Bin asginé à ce produit.</p>
                     }
+                    
                   </div>
                   <div className="flex justify-center">
-                    <button className="py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto" onClick={ () => checkedProduct(product.upc) }>Done</button>
+                    <button className="py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit" onClick={ (e) => checkedProduct(e.currentTarget) }>Fini</button>
                   </div>
                 </div>
               )
