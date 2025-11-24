@@ -57,6 +57,8 @@ export default function Home() {
           quantityOnHand: data.data[0].quantityOnHand || 0,
           quantityToReStock: 1,
           binLocation: data.data[0].binLocations || [],
+          htsus: data.data[0].htsUS || null,
+          imageUrl: data.data[0].imageURL || "",
         }
         setProductList(prevList => [...prevList, newProduct]);
       }
@@ -84,7 +86,8 @@ export default function Home() {
           />
         </header>
         <section className="flex flex-col items-center justify-center py-2">
-          <h1 className="text-4xl font-bold mb-4">Liste des produits</h1>
+          <h1 className="text-4xl font-bold">Liste des produits</h1>
+          <p className="mb-4"><small>V.1.5.0</small></p>
           <div className="form-list flex justify-center gap-4 p-2 bg-gray-100 w-full">
             <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
             <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2" value={upc} onChange={(e) => setUpc(e.target.value)} />
@@ -93,12 +96,14 @@ export default function Home() {
         </section>
         <section className="py-2">
           <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full">
-            <p>Information du produit</p>
+            <p>Image</p>
+            <p>Nom du produit</p>
             <p className="text-center">SKU</p>
             <p className="text-center">UPC</p>
             <p className="text-center">Quantité Disponible</p>
             <p className="text-center">Quantité reservé</p>
             <p className="text-center">Quantité à approvisionner</p>
+            <p className="text-center">HTSUS</p>
             <p className="text-center">Bin</p>
             <p className="text-center">Statut</p>
           </div>
@@ -106,6 +111,13 @@ export default function Home() {
             productList.map((product:Product, index:number) => {
               return (
                 <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index}`} id={product.upc}>
+                  <div className="container-image">
+                    <Image
+                      src={product.imageUrl || ''}
+                      alt={product.name}
+                      width={200}
+                      height={60} />
+                  </div>
                   <div className="text-sm font-semibold">
                     <h2>{product.name}</h2>
                   </div>
@@ -114,6 +126,7 @@ export default function Home() {
                   <p className="text-center">{product.quantityAvailable}</p>
                   <p className="text-center">{product.quantityOnHand}</p>
                   <p className="text-center">{product.quantityToReStock}</p>
+                  <p className="text-center">{product.htsus || "N/A"}</p>
                   <div className="flex justify-start gap-4 flex-wrap">
                     {
                       product.binLocation.length > 0 ? (

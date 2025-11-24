@@ -6,4 +6,6 @@ export type Product = {
   quantityOnHand: number;
   quantityToReStock: number;
   binLocation: string[] | string;
+  htsus: string | null;
+  imageUrl: string;
 }
