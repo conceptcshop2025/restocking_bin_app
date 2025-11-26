@@ -30,20 +30,32 @@ export default function Home() {
   }, [debouncedUpc]);
 
   useEffect(() => {
-    if(productList.length === 0) return;
+    if (!productList || productList.length === 0) return;
 
-    const sorted = [...productList].sort((a, b) => {
-      let locA = a.binLocation[0];
-      const locB = b.binLocation[0];
+    // group by UPC and detect duplicates
+    const map = new Map<string, Product>();
+    let foundDuplicate = false;
 
-      if (locA === undefined) {
-        locA = '999.99.99';
+    for (const p of productList) {
+      const key = p.upc;
+      if (!map.has(key)) {
+        map.set(key, { ...p });
+      } else {
+        foundDuplicate = true;
+        const existing = map.get(key)!;
+        existing.quantityToReStock += 1;
       }
+    }
 
-      return locA.localeCompare(locB);
-    });
-    setProductList(sorted);
-  }, [productList.length]);
+    const processed = foundDuplicate ? Array.from(map.values()) : productList;
+
+    // sort processed array (replace comparator with your actual sort)
+    const sorted = [...processed].sort((a, b) => a.name.localeCompare(b.name));
+
+    if (JSON.stringify(sorted) !== JSON.stringify(productList)) {
+      setProductList(sorted);
+    }
+  }, [productList, setProductList]);
 
   function getData(upc:string) {
     const baseUrl = `/api/ipacky?upc=${upc}`;
@@ -134,6 +146,7 @@ export default function Home() {
             {/* <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2" value={upc} onChange={(e) => setUpc(e.target.value)} /> */}
             <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2" value={upc} onChange={(e) => setUpc(e.target.value)} />
             <button className="add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer" onClick={() => getAllData()}>Créer liste</button>
+            <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer" onClick={() => setProductList([])}>Nouvelle liste</button>
           </div>
         </section>
         <section className="py-2">
