@@ -14,7 +14,7 @@ export default function Home() {
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedUpc(upc);
-    }, 500);
+    }, 100);
 
     return () => {
       clearTimeout(handler);
