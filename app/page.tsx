@@ -71,8 +71,19 @@ export default function Home() {
     });
   }
 
-  function checkedProduct(element:HTMLElement) {
-    element.closest('.product-card')?.classList.add('bg-green-600', 'opacity-50');
+  function toggleCheckedProduct(element:HTMLElement) {
+    const parentElement = element.closest('.product-card');
+    if (parentElement?.classList.contains('checked-product')) {
+      parentElement.classList.remove('checked-product', 'bg-green-600');
+      element.classList.remove('bg-red-600');
+      element.innerText = "Fini";
+      return;
+    } else {
+      parentElement?.classList.add('checked-product', 'bg-green-600');
+      element.classList.add('bg-red-600');
+      element.innerText = "Annuler";
+    }
+    return;
   }
 
   return (
@@ -146,7 +157,7 @@ export default function Home() {
                     
                   </div>
                   <div className="flex justify-center">
-                    <button className="py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit" onClick={ (e) => checkedProduct(e.currentTarget) }>Fini</button>
+                    <button className="py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit" onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>Fini</button>
                   </div>
                 </div>
               )
