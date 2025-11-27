@@ -9,3 +9,8 @@ export type Product = {
   htsus: string | null;
   imageUrl: string;
 }
+
+export type Modal = {
+  content: string;
+  onClose: () => void;
+}

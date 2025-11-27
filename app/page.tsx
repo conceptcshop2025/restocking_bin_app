@@ -2,11 +2,13 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { Product } from "./types/type";
+import Modal from "./components/Modal/Modal";
 
 export default function Home() {
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
+  const [contentModal, setContentModal] = useState<string>("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -76,6 +78,9 @@ export default function Home() {
   return (
     <div>
       <main>
+        {
+          contentModal && <Modal content={contentModal} onClose={() => setContentModal("")} />
+        }
         <header className="flex justify-center p-2">
           <Image
             src="/concept-c-logo.webp"
@@ -116,7 +121,8 @@ export default function Home() {
                       src={product.imageUrl || ''}
                       alt={product.name}
                       width={200}
-                      height={60} />
+                      height={60}
+                      onClick={() => setContentModal(product.imageUrl)} />
                   </div>
                   <div className="text-sm font-semibold">
                     <h2>{product.name}</h2>
