@@ -149,10 +149,10 @@ export default function Home() {
                       product.binLocation.length > 0 ? (
                         (Array.isArray(product.binLocation) ? product.binLocation : [product.binLocation]).map((location: string, idx: number) => {
                           return (
-                            <span key={idx} className="p-2 bg-neutral-200 inline-block h-fit rounded-md">{location}</span>
+                            <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{location}</span>
                           )
                         })
-                      ) : <p>Il n'y a pas de Bin asginé à ce produit.</p>
+                      ) : <p className="font-sans">Il n'y a pas de Bin asginé à ce produit.</p>
                     }
                     
                   </div>
