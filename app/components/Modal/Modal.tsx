@@ -10,8 +10,8 @@ export default function Modal({content, onClose}: Modal) {
         src={content}
         alt="product-image"
         width={960}
-        height={960}
-        className="rounded-lg" />
+        height={540}
+        className="rounded-lg h-dvh w-full" />
       </div>
     </div>
   )
