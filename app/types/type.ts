@@ -14,3 +14,8 @@ export type Modal = {
   content: string;
   onClose: () => void;
 }
+
+export type Toast = {
+  type: "success" | "error" | "info";
+  message: string;
+}

@@ -4,14 +4,16 @@ import { useState, useEffect } from "react";
 import { Product } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
+import Toast from "./components/Toast/Toast";
 
 export default function Home() {
-  const appVersion:string = "1.7.0";
+  const appVersion:string = "1.7.1";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
   const [contentModal, setContentModal] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<{type: "success" | "error" | "info", message: string} | null>(null);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -103,20 +105,22 @@ export default function Home() {
     })
     .then(response => response.json())
     .then(data => {
-      console.log('Success:', data);
+      setShowToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
     })
     .catch((error) => {
-      console.error('Error:', error);
+      setShowToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
     })
     .finally(() => {
       setIsLoading(false);
       setProductList([]);
+      setTimeout(() => { setShowToast(null); }, 6000);
     });
   }
 
   return (
     <div>
       <main>
+        { showToast && <Toast type={showToast.type} message={showToast.message} />}
         {
           contentModal && <Modal content={contentModal} onClose={() => setContentModal("")} />
         }
