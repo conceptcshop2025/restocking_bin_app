@@ -7,13 +7,15 @@ import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 
 export default function Home() {
-  const appVersion:string = "1.8.0";
+  const appVersion:string = "1.9.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
   const [contentModal, setContentModal] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<{type: "success" | "error" | "info", message: string} | null>(null);
+  const [showInputNameList, setShowInputNameList] = useState<boolean>(false);
+  const [nameList, setNameList] = useState<string>("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -105,7 +107,7 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: `Restocking Bin - ${new Date().toLocaleString()}`,
+          name: nameList.length > 0 ? nameList : `Restocking Bin - ${new Date().toLocaleString()}`,
           products: productList,
         }),
       })
@@ -119,9 +121,23 @@ export default function Home() {
       .finally(() => {
         setIsLoading(false);
         setProductList([]);
+        setNameList("");
         setTimeout(() => { setShowToast(null); }, 6000);
       });
     }
+  }
+
+  function toggleInputNameList(isChecked?:boolean) {
+    if (isChecked !== undefined) {
+      setShowInputNameList(isChecked);
+    } else {
+      setShowInputNameList(!showInputNameList);
+      setNameList("");
+    }
+  }
+
+  async function showHistoryList() {
+    return;
   }
 
   return (
@@ -145,10 +161,21 @@ export default function Home() {
           <p className="mb-4"><small>V.{appVersion}</small></p>
           <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full">
             <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
-            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2" value={upc} onChange={(e) => setUpc(e.target.value)} />
+            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
             <div className="action-buttons flex gap-4 justify-end items-center">
-              <button className="add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer " onClick={() => saveList()}>Garder la liste</button>
-              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer">Historique des listes</button>
+              <div className="actions-group flex flex-col gap-2">
+                <button className={`add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer ${ showInputNameList && nameList.length === 0 && 'pointer-events-none bg-neutral-400' }`} onClick={() => saveList()}>Garder la liste</button>
+                <div className="manual-name-list">
+                  <input type="checkbox" onChange={(e) => toggleInputNameList(e.target.checked)} id="show-input-name-list" name="show-input-name-list" />
+                  <label className="ml-2" htmlFor="show-input-name-list">Ajouter manuellement le nom de liste</label>
+                  {
+                    showInputNameList && (
+                      <input type="text" id="name-list" name="name-list" placeholder="Nom de liste" className="border border-zinc-300 rounded-md px-2 py-2 block w-full" onChange={(e) => setNameList(e.target.value)} />
+                    )
+                  }
+                </div>
+              </div>
+              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer hidden" onClick={() => { showHistoryList() }}>Historique des listes</button>
             </div>
           </div>
         </section>
@@ -178,7 +205,8 @@ export default function Home() {
                           alt={product.name}
                           width={200}
                           height={60}
-                          onClick={() => setContentModal(product.imageUrl)} />
+                          onClick={() => setContentModal(product.imageUrl)}
+                          className="cursor-pointer" />
                       </div>
                       <div className="text-sm font-semibold">
                         <h2>{product.name}</h2>
