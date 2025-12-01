@@ -1,16 +1,16 @@
 @keyframes toast {
   0% {
-    top: -5%;
+    top: -10%;
   }
   10%, 90% {
     top: 2%;
   }
   100% {
-    top: -5%;
+    top: -10%;
   }
 }
 
 .toast {
-  top: -5%;
+  top: -10%;
   animation: toast 5s ease-in-out forwards;
 }

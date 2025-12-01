@@ -7,7 +7,7 @@ import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 
 export default function Home() {
-  const appVersion:string = "1.7.1";
+  const appVersion:string = "1.8.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -93,28 +93,35 @@ export default function Home() {
 
   async function saveList() {
     setIsLoading(true);
-    await fetch('/api/conceptc', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        name: `Restocking Bin - ${new Date().toLocaleString()}`,
-        products: productList,
-      }),
-    })
-    .then(response => response.json())
-    .then(data => {
-      setShowToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
-    })
-    .catch((error) => {
-      setShowToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
-    })
-    .finally(() => {
+    console.log(productList);
+    if (productList.length === 0) {
+      setShowToast({type: "info", message: "La liste de produits est vide. Veuillez ajouter des produits avant de sauvegarder." });
       setIsLoading(false);
-      setProductList([]);
       setTimeout(() => { setShowToast(null); }, 6000);
-    });
+    } else {
+      await fetch('/api/conceptc', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: `Restocking Bin - ${new Date().toLocaleString()}`,
+          products: productList,
+        }),
+      })
+      .then(response => response.json())
+      .then(data => {
+        setShowToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
+      })
+      .catch((error) => {
+        setShowToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
+      })
+      .finally(() => {
+        setIsLoading(false);
+        setProductList([]);
+        setTimeout(() => { setShowToast(null); }, 6000);
+      });
+    }
   }
 
   return (
@@ -139,7 +146,10 @@ export default function Home() {
           <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full">
             <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
             <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2" value={upc} onChange={(e) => setUpc(e.target.value)} />
-            <button className="add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer " onClick={() => saveList()}>Garder la liste</button>
+            <div className="action-buttons flex gap-4 justify-end items-center">
+              <button className="add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer " onClick={() => saveList()}>Garder la liste</button>
+              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer">Historique des listes</button>
+            </div>
           </div>
         </section>
         {
