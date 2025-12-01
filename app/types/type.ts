@@ -10,8 +10,8 @@ export type Product = {
   imageUrl: string;
 }
 
-export type Modal = {
-  content: string;
+export type ModalContent = {
+  content: Element | null;
   onClose: () => void;
 }
 

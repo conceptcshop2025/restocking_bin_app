@@ -1,17 +1,17 @@
 "use client";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Product } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 
 export default function Home() {
-  const appVersion:string = "1.9.0";
+  const appVersion:string = "2.0.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
-  const [contentModal, setContentModal] = useState<string>("");
+  const [contentModal, setContentModal] = useState<{ content: React.ReactNode | null; onClose: () => void }>({content: null, onClose: () => {}});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<{type: "success" | "error" | "info", message: string} | null>(null);
   const [showInputNameList, setShowInputNameList] = useState<boolean>(false);
@@ -145,7 +145,7 @@ export default function Home() {
       <main>
         { showToast && <Toast type={showToast.type} message={showToast.message} />}
         {
-          contentModal && <Modal content={contentModal} onClose={() => setContentModal("")} />
+          contentModal.content && <Modal content={contentModal.content} onClose={contentModal.onClose} />
         }
         <header className="flex justify-center p-2">
           <Image
@@ -162,7 +162,7 @@ export default function Home() {
           <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full">
             <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
             <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
-            <div className="action-buttons flex gap-4 justify-end items-center">
+            <div className="action-buttons flex gap-4 justify-end items-start">
               <div className="actions-group flex flex-col gap-2">
                 <button className={`add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer ${ showInputNameList && nameList.length === 0 && 'pointer-events-none bg-neutral-400' }`} onClick={() => saveList()}>Garder la liste</button>
                 <div className="manual-name-list">
@@ -175,7 +175,7 @@ export default function Home() {
                   }
                 </div>
               </div>
-              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer hidden" onClick={() => { showHistoryList() }}>Historique des listes</button>
+              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { showHistoryList() }}>Historique des listes</button>
             </div>
           </div>
         </section>
@@ -205,7 +205,17 @@ export default function Home() {
                           alt={product.name}
                           width={200}
                           height={60}
-                          onClick={() => setContentModal(product.imageUrl)}
+                          onClick={() => setContentModal({
+                            content: (
+                              <Image 
+                                src={product.imageUrl || ''}
+                                alt="product-image"
+                                width={960}
+                                height={540}
+                                className="rounded-lg h-dvh w-full" />
+                            ) as React.ReactNode,
+                            onClose: () => setContentModal({content: null, onClose: () => {}})
+                          })}
                           className="cursor-pointer" />
                       </div>
                       <div className="text-sm font-semibold">
