@@ -8,7 +8,7 @@ import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.2.1";
+  const appVersion:string = "2.2.2";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -215,7 +215,7 @@ export default function Home() {
                                 alt="product-image"
                                 width={960}
                                 height={540}
-                                className="rounded-lg h-dvh w-full" />
+                                className="rounded-lg h-[90dvh] w-full" />
                             ) as React.ReactNode,
                             onClose: () => setContentModal({content: null, onClose: () => {}})
                           })}
