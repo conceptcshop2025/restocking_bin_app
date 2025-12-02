@@ -1,7 +1,7 @@
-import type { Toast } from "@/app/types/type";
+import type { ToastProps } from "@/app/types/type";
 import './Toast.css';
 
-export default function Toast({type, message}: Toast) {
+export default function Toast({type, message}: ToastProps) {
   let bgColor = "";
   let textColor = "";
 

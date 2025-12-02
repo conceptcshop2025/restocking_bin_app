@@ -8,7 +8,7 @@ import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.1.0";
+  const appVersion:string = "2.1.1";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);

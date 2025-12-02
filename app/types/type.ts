@@ -29,3 +29,8 @@ export type LoaderProps = {
   text?: string;
   classes?: string;
 }
+
+export type HistoryListProps = {
+  id: number;
+  name: string;
+}

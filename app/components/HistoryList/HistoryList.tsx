@@ -29,7 +29,6 @@ export default function HistoryList({onClose, onToast}: HistoryListModal) {
   }, []);
 
   async function deleteHistoryItem(id: string) {
-    console.log("Deleting item with id:", id);
     fetch(`/api/conceptc?id=${id}`, {
       method: 'DELETE',
       headers: {
@@ -38,7 +37,6 @@ export default function HistoryList({onClose, onToast}: HistoryListModal) {
     })
     .then(response => response.json())
     .then(data => {
-      console.log(data);
       setHistoryList(prevList => prevList.filter(item => item.id !== id));
       onToast({type: "success", message: "Élément d'historique supprimé avec succès." });
     })
