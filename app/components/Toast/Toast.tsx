@@ -24,6 +24,6 @@ export default function Toast({type, message}: Toast) {
   }
 
   return (
-    <div className={`toast inline-block py-4 px-8 rounded-lg text-2xl fixed top-4 left-4 ${bgColor} ${textColor}`}>{ message }</div>
+    <div className={`toast z-40 inline-block py-4 px-8 rounded-lg text-2xl fixed top-4 left-4 ${bgColor} ${textColor}`}>{ message }</div>
   )
 }
