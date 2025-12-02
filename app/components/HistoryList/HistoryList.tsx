@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
-import type { HistoryListModal } from "@/app/types/type";
+import type { HistoryListModal, HistoryListProps } from "@/app/types/type";
 import { Loader } from "../Loader/Loader";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function HistoryList({onClose, onToast}: HistoryListModal) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [historyList, setHistoryList] = useState<Array<any>>([]);
+  const [historyList, setHistoryList] = useState<Array<HistoryListProps>>([]);
   
   useEffect(() => {
     setIsLoading(true);
@@ -28,7 +28,7 @@ export default function HistoryList({onClose, onToast}: HistoryListModal) {
     });
   }, []);
 
-  async function deleteHistoryItem(id: string) {
+  async function deleteHistoryItem(id: number) {
     fetch(`/api/conceptc?id=${id}`, {
       method: 'DELETE',
       headers: {
@@ -37,7 +37,7 @@ export default function HistoryList({onClose, onToast}: HistoryListModal) {
     })
     .then(response => response.json())
     .then(data => {
-      setHistoryList(prevList => prevList.filter(item => item.id !== id));
+      setHistoryList(prevList => prevList.filter(item => Number(item.id) !== Number(id)));
       onToast({type: "success", message: "Élément d'historique supprimé avec succès." });
     })
     .catch((error) => {
@@ -57,7 +57,7 @@ export default function HistoryList({onClose, onToast}: HistoryListModal) {
                 historyList.length === 0 ?
                 <p className="text-center text-2xl">Aucun historique de liste disponible.</p> :
                 <ul className="list-none max-h-dvh">
-                  { historyList.map((item:any, index:number) => (
+                  { historyList.map((item:HistoryListProps, index:number) => (
                     <li key={item.id} className="py-2 odd:bg-neutral-200 flex items-center justify-between px-4">
                       <span>{ item.name }</span>
                       <span><TrashIcon className="size-6 text-red-600 cursor-pointer" onClick={() => deleteHistoryItem(item.id)}/></span>

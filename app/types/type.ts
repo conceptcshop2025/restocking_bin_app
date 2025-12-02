@@ -33,4 +33,6 @@ export type LoaderProps = {
 export type HistoryListProps = {
   id: number;
   name: string;
+  date: string;
+  products: Product[];
 }
