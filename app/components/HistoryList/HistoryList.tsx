@@ -1,13 +1,11 @@
 import { useState, useEffect } from "react";
 import type { HistoryListModal } from "@/app/types/type";
 import { Loader } from "../Loader/Loader";
-import Toast from "../Toast/Toast";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
-export default function HistoryList({onClose}: HistoryListModal) {
+export default function HistoryList({onClose, onToast}: HistoryListModal) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [historyList, setHistoryList] = useState<Array<any>>([]);
-  const [showToast, setShowToast] = useState<{type: "success" | "error" | "info", message: string} | null>(null);
   
   useEffect(() => {
     setIsLoading(true);
@@ -23,12 +21,31 @@ export default function HistoryList({onClose}: HistoryListModal) {
       setHistoryList(data.data || []);
     })
     .catch((error) => {
-      setShowToast({type: "error", message: "Une erreur est survenue lors de la récupération de l'historique des listes." });
+      onToast({type: "error", message: "Une erreur est survenue lors de la récupération de l'historique des listes." });
     })
     .finally(() => {
       setIsLoading(false);
     });
   }, []);
+
+  async function deleteHistoryItem(id: string) {
+    console.log("Deleting item with id:", id);
+    fetch(`/api/conceptc?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log(data);
+      setHistoryList(prevList => prevList.filter(item => item.id !== id));
+      onToast({type: "success", message: "Élément d'historique supprimé avec succès." });
+    })
+    .catch((error) => {
+      onToast({type: "error", message: "Une erreur est survenue lors de la suppression de l'élément d'historique." });
+    });
+  }
 
   return (
     <div className="modal fixed top-0 left-0 w-full h-full bg-neutral-900/50 bg-opacity-75 flex items-center justify-center">
@@ -45,7 +62,7 @@ export default function HistoryList({onClose}: HistoryListModal) {
                   { historyList.map((item:any, index:number) => (
                     <li key={item.id} className="py-2 odd:bg-neutral-200 flex items-center justify-between px-4">
                       <span>{ item.name }</span>
-                      <span><TrashIcon className="size-6 text-red-600"/></span>
+                      <span><TrashIcon className="size-6 text-red-600 cursor-pointer" onClick={() => deleteHistoryItem(item.id)}/></span>
                     </li>
                   ))}
                 </ul>

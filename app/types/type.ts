@@ -22,6 +22,7 @@ export type Toast = {
 
 export type HistoryListModal = {
   onClose: () => void;
+  onToast: (toast: Toast) => void;
 }
 
 export type LoaderProps = {

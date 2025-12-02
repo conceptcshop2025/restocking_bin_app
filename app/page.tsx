@@ -144,7 +144,7 @@ export default function Home() {
         {
           contentModal.content && <Modal content={contentModal.content} onClose={contentModal.onClose} />
         }
-        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} /> }
+        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} onToast={(toast) => setShowToast(toast)} /> }
         <header className="flex justify-center p-2">
           <Image
             src="/concept-c-logo.webp"
