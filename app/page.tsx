@@ -1,20 +1,20 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { Product } from "./types/type";
+import { Product, ToastProps } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.0.0";
+  const appVersion:string = "2.1.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
   const [contentModal, setContentModal] = useState<{ content: React.ReactNode | null; onClose: () => void }>({content: null, onClose: () => {}});
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [showToast, setShowToast] = useState<{type: "success" | "error" | "info", message: string} | null>(null);
+  const [showToast, setShowToast] = useState<ToastProps | null>(null);
   const [showInputNameList, setShowInputNameList] = useState<boolean>(false);
   const [nameList, setNameList] = useState<string>("");
   const [showHistoryListModal, setShowHistoryListModal] = useState<boolean>(false);
@@ -98,9 +98,8 @@ export default function Home() {
   async function saveList() {
     setIsLoading(true);
     if (productList.length === 0) {
-      setShowToast({type: "info", message: "La liste de produits est vide. Veuillez ajouter des produits avant de sauvegarder." });
+      initToast({type: "info", message: "La liste de produits est vide. Veuillez ajouter des produits avant de sauvegarder." });
       setIsLoading(false);
-      setTimeout(() => { setShowToast(null); }, 6000);
     } else {
       await fetch('/api/conceptc', {
         method: 'POST',
@@ -114,16 +113,15 @@ export default function Home() {
       })
       .then(response => response.json())
       .then(data => {
-        setShowToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
+        initToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
       })
       .catch((error) => {
-        setShowToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
+        initToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
       })
       .finally(() => {
         setIsLoading(false);
         setProductList([]);
         setNameList("");
-        setTimeout(() => { setShowToast(null); }, 6000);
       });
     }
   }
@@ -137,6 +135,13 @@ export default function Home() {
     }
   }
 
+  function initToast(content:ToastProps | null) {
+    setShowToast(content);
+    if (content) {
+      setTimeout(() => { setShowToast(null); }, 6000);
+    }
+  }
+
   return (
     <div>
       <main>
@@ -144,7 +149,7 @@ export default function Home() {
         {
           contentModal.content && <Modal content={contentModal.content} onClose={contentModal.onClose} />
         }
-        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} onToast={(toast) => setShowToast(toast)} /> }
+        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} onToast={(toast) => initToast(toast)} /> }
         <header className="flex justify-center p-2">
           <Image
             src="/concept-c-logo.webp"

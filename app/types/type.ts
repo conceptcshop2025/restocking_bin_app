@@ -15,14 +15,14 @@ export type ModalContent = {
   onClose: () => void;
 }
 
-export type Toast = {
+export type ToastProps = {
   type: "success" | "error" | "info";
   message: string;
 }
 
 export type HistoryListModal = {
   onClose: () => void;
-  onToast: (toast: Toast) => void;
+  onToast: (toast: ToastProps) => void;
 }
 
 export type LoaderProps = {
