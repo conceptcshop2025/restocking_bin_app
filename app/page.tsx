@@ -5,6 +5,7 @@ import { Product } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
+import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
   const appVersion:string = "2.0.0";
@@ -16,6 +17,7 @@ export default function Home() {
   const [showToast, setShowToast] = useState<{type: "success" | "error" | "info", message: string} | null>(null);
   const [showInputNameList, setShowInputNameList] = useState<boolean>(false);
   const [nameList, setNameList] = useState<string>("");
+  const [showHistoryListModal, setShowHistoryListModal] = useState<boolean>(false);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -95,7 +97,6 @@ export default function Home() {
 
   async function saveList() {
     setIsLoading(true);
-    console.log(productList);
     if (productList.length === 0) {
       setShowToast({type: "info", message: "La liste de produits est vide. Veuillez ajouter des produits avant de sauvegarder." });
       setIsLoading(false);
@@ -136,10 +137,6 @@ export default function Home() {
     }
   }
 
-  async function showHistoryList() {
-    return;
-  }
-
   return (
     <div>
       <main>
@@ -147,6 +144,7 @@ export default function Home() {
         {
           contentModal.content && <Modal content={contentModal.content} onClose={contentModal.onClose} />
         }
+        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} /> }
         <header className="flex justify-center p-2">
           <Image
             src="/concept-c-logo.webp"
@@ -175,7 +173,7 @@ export default function Home() {
                   }
                 </div>
               </div>
-              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { showHistoryList() }}>Historique des listes</button>
+              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { setShowHistoryListModal(true) }}>Historique des listes</button>
             </div>
           </div>
         </section>

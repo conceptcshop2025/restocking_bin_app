@@ -27,3 +27,25 @@ export async function POST(req: Request) {
     );
   }
 }
+
+export async function GET() {
+  try {
+    const result = await sql`
+      SELECT * FROM restocking_bin ORDER BY date DESC;
+    `;
+
+    if (result.length === 0) {
+      return NextResponse.json(
+        { message: "No restocking bins found" },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ data: result }, { status: 200 });
+  } catch(error) {
+    return NextResponse.json(
+      { error: "Internal server error", details: String(error) },
+      { status: 500 }
+    );
+  }
+}

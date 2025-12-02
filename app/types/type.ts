@@ -19,3 +19,12 @@ export type Toast = {
   type: "success" | "error" | "info";
   message: string;
 }
+
+export type HistoryListModal = {
+  onClose: () => void;
+}
+
+export type LoaderProps = {
+  text?: string;
+  classes?: string;
+}
