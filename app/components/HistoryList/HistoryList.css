@@ -1,0 +1,28 @@
+.history-list-item {
+  grid-template-areas:
+    "name delete"
+    "products products";
+  grid-template-rows: auto auto;
+}
+
+.history-list-item .item-name {
+  grid-area: name;
+}
+
+.history-list-item .delete-icon {
+  grid-area: delete;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.history-list-item .product-list {
+  grid-area: products;
+  max-height: 0;
+  height: 100%;
+  overflow: hidden;
+  transition: max-height 0.5s ease-in-out, padding 0.5s ease-in-out;
+}
+
+.history-list-item .product-list.active {
+  max-height: 500px;
+}
