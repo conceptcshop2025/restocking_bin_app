@@ -1,14 +1,14 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { Product, ToastProps } from "./types/type";
+import { Product, ToastProps, HistoryListProps } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.2.2";
+  const appVersion:string = "2.3.2";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -70,6 +70,7 @@ export default function Home() {
           binLocation: data.data[0].binLocations || [],
           htsus: data.data[0].htsUS || null,
           imageUrl: data.data[0].imageURL || "",
+          restocked: false,
         }
         setProductList(prevList => [...prevList, newProduct]);
       }
@@ -86,11 +87,13 @@ export default function Home() {
       parentElement.classList.remove('checked-product', 'bg-green-600');
       element.classList.remove('bg-red-600');
       element.innerText = "Fini";
+      if (parentElement) updateRestockedStatus(parentElement.id, false);
       return;
-    } else {
-      parentElement?.classList.add('checked-product', 'bg-green-600');
+    } else if (parentElement) {
+      parentElement.classList.add('checked-product', 'bg-green-600');
       element.classList.add('bg-red-600');
       element.innerText = "Annuler";
+      updateRestockedStatus(parentElement.id, true);
     }
     return;
   }
@@ -142,6 +145,23 @@ export default function Home() {
     }
   }
 
+  async function setProductListFromHistoryList(selectedItem:HistoryListProps) {
+    console.log("Selected Item from History List:", selectedItem);
+    setIsLoading(true);
+    setProductList(selectedItem.products);
+    setIsLoading(false);
+    setShowHistoryListModal(false);
+  }
+
+  async function updateRestockedStatus(upc:string, status:boolean) {
+    const findProduct = productList.find(product => product.upc === upc);
+    if (findProduct) {
+      findProduct.restocked = status;
+      setProductList([...productList]);
+    }
+    return;
+  }
+
   return (
     <div>
       <main>
@@ -149,7 +169,7 @@ export default function Home() {
         {
           contentModal.content && <Modal content={contentModal.content} onClose={contentModal.onClose} />
         }
-        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} onToast={(toast) => initToast(toast)} /> }
+        { showHistoryListModal && <HistoryList onClose={() => setShowHistoryListModal(false)} onToast={(toast) => initToast(toast)} onSelectItem={(item) => setProductListFromHistoryList(item)} /> }
         <header className="flex justify-center p-2">
           <Image
             src="/concept-c-logo.webp"
@@ -201,7 +221,7 @@ export default function Home() {
               {
                 productList.map((product:Product, index:number) => {
                   return (
-                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index}`} id={product.upc}>
+                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index} ${product.restocked && 'checked-product bg-green-600'}`} id={product.upc}>
                       <div className="container-image">
                         <Image
                           src={product.imageUrl || ''}
@@ -243,7 +263,9 @@ export default function Home() {
                         
                       </div>
                       <div className="flex justify-center">
-                        <button className="py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit" onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>Fini</button>
+                        <button className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit ${product.restocked && 'bg-red-600'}`} onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>
+                          { product.restocked ? "Annuler" : "Fini" }
+                        </button>
                       </div>
                     </div>
                   )

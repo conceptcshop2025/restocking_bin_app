@@ -5,7 +5,7 @@ import { TrashIcon } from "@heroicons/react/16/solid";
 import Image from "next/image";
 import './HistoryList.css';
 
-export default function HistoryList({onClose, onToast}: HistoryListModal) {
+export default function HistoryList({onClose, onToast, onSelectItem}: HistoryListModal) {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [historyList, setHistoryList] = useState<Array<HistoryListProps>>([]);
   
@@ -71,7 +71,7 @@ export default function HistoryList({onClose, onToast}: HistoryListModal) {
                 <ul className="list-none max-h-dvh">
                   { historyList.map((item:HistoryListProps, index:number) => (
                     <li key={item.id} className="history-list-item py-2 odd:bg-neutral-200 grid px-4">
-                      <span className="item-name cursor-pointer hover:text-blue-800 duration-300 ease-in-out" onClick={(e) => toggleProductList(e.target)}>{ item.name }</span>
+                      <span className="item-name cursor-pointer hover:text-blue-800 duration-300 ease-in-out" onClick={() => onSelectItem?.(item)}>{ item.name }</span>
                       <span className="delete-icon"><TrashIcon className="size-6 text-red-600 cursor-pointer" onClick={() => deleteHistoryItem(item.id)}/></span>
                       <div className="product-list w-full  rounded-md overflow-x-auto">
                         <table className="w-full border-collapse mt-2 bg-blue-100">

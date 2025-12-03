@@ -8,6 +8,7 @@ export type Product = {
   binLocation: string[] | string;
   htsus: string | null;
   imageUrl: string;
+  restocked: boolean;
 }
 
 export type ModalContent = {
@@ -23,6 +24,7 @@ export type ToastProps = {
 export type HistoryListModal = {
   onClose: () => void;
   onToast: (toast: ToastProps) => void;
+  onSelectItem?: (item: HistoryListProps) => void;
 }
 
 export type LoaderProps = {
