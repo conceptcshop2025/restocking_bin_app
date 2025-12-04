@@ -8,7 +8,7 @@ import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.4.4";
+  const appVersion:string = "2.5.4";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -19,6 +19,7 @@ export default function Home() {
   const [nameList, setNameList] = useState<string>("");
   const [showHistoryListModal, setShowHistoryListModal] = useState<boolean>(false);
   const [listFromHistory, setListFromHistory] = useState<HistoryListProps | null>(null);
+  const [latestSavedUpc, setLatestSavedUpc] = useState<string>("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -75,6 +76,7 @@ export default function Home() {
         }
         setProductList(prevList => [...prevList, newProduct]);
       }
+      latestAddedProduct(data.data[0].barcode);
       setUpc("");
     })
     .catch((error) => {
@@ -190,6 +192,14 @@ export default function Home() {
     return;
   }
 
+  function latestAddedProduct(upc:string) {
+    setLatestSavedUpc(upc);
+    const productPosition = document.getElementById(upc);
+    if (productPosition) {
+      productPosition.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+
   return (
     <div>
       <main>
@@ -254,7 +264,7 @@ export default function Home() {
               {
                 productList.map((product:Product, index:number) => {
                   return (
-                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index} ${product.restocked && 'checked-product bg-green-600'}`} id={product.upc}>
+                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index} ${product.restocked && 'checked-product bg-green-600'} ${latestSavedUpc === product.upc && 'bg-sky-200'}`} id={product.upc}>
                       <div className="container-image">
                         <Image
                           src={product.imageUrl || ''}
