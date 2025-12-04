@@ -8,7 +8,7 @@ import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.3.2";
+  const appVersion:string = "2.3.4";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -18,6 +18,7 @@ export default function Home() {
   const [showInputNameList, setShowInputNameList] = useState<boolean>(false);
   const [nameList, setNameList] = useState<string>("");
   const [showHistoryListModal, setShowHistoryListModal] = useState<boolean>(false);
+  const [listFromHistory, setListFromHistory] = useState<HistoryListProps | null>(null);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -146,8 +147,8 @@ export default function Home() {
   }
 
   async function setProductListFromHistoryList(selectedItem:HistoryListProps) {
-    console.log("Selected Item from History List:", selectedItem);
     setIsLoading(true);
+    setListFromHistory(selectedItem);
     setProductList(selectedItem.products);
     setIsLoading(false);
     setShowHistoryListModal(false);
@@ -193,7 +194,7 @@ export default function Home() {
                   <label className="ml-2" htmlFor="show-input-name-list">Ajouter manuellement le nom de liste</label>
                   {
                     showInputNameList && (
-                      <input type="text" id="name-list" name="name-list" placeholder="Nom de liste" className="border border-zinc-300 rounded-md px-2 py-2 block w-full" onChange={(e) => setNameList(e.target.value)} />
+                      <input type="text" id="name-list" name="name-list" placeholder="Nom de liste" className="border border-zinc-300 rounded-md px-2 py-2 block w-full" value={nameList} onChange={(e) => setNameList(e.target.value)} />
                     )
                   }
                 </div>
@@ -206,6 +207,11 @@ export default function Home() {
           isLoading ?
             <Loader /> :
             <section className="py-2">
+              {
+                listFromHistory && (
+                  <p className="py-4 px-2 text-2xl">{ listFromHistory.name }</p>
+                )
+              }
               <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full">
                 <p>Image</p>
                 <p>Nom du produit</p>
