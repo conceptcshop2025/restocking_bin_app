@@ -8,7 +8,7 @@ import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 
 export default function Home() {
-  const appVersion:string = "2.3.4";
+  const appVersion:string = "2.4.4";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -101,32 +101,59 @@ export default function Home() {
 
   async function saveList() {
     setIsLoading(true);
-    if (productList.length === 0) {
-      initToast({type: "info", message: "La liste de produits est vide. Veuillez ajouter des produits avant de sauvegarder." });
-      setIsLoading(false);
-    } else {
-      await fetch('/api/conceptc', {
-        method: 'POST',
+    if (listFromHistory !== null) {
+      await fetch(`/api/conceptc?id=${listFromHistory.id}`, {
+        method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          name: nameList.length > 0 ? nameList : `Restocking Bin - ${new Date().toLocaleString()}`,
+          id: listFromHistory.id,
           products: productList,
         }),
       })
       .then(response => response.json())
       .then(data => {
-        initToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
+        initToast({type: "success", message: "La liste de produits a été metter à jour avec succès !" });
       })
       .catch((error) => {
-        initToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
+        initToast({type: "error", message: "Une erreur est survenue lors de la mise à jour de la liste de produits." });
       })
       .finally(() => {
         setIsLoading(false);
         setProductList([]);
         setNameList("");
+        setListFromHistory(null);
       });
+    } else {
+      if (productList.length === 0) {
+        initToast({type: "info", message: "La liste de produits est vide. Veuillez ajouter des produits avant de sauvegarder." });
+        setIsLoading(false);
+      } else {
+        await fetch('/api/conceptc', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: nameList.length > 0 ? nameList : `Restocking Bin - ${new Date().toLocaleString()}`,
+            products: productList,
+          }),
+        })
+        .then(response => response.json())
+        .then(data => {
+          initToast({type: "success", message: "La liste de produits a été sauvegardée avec succès !" });
+        })
+        .catch((error) => {
+          initToast({type: "error", message: "Une erreur est survenue lors de la sauvegarde de la liste de produits." });
+        })
+        .finally(() => {
+          setIsLoading(false);
+          setProductList([]);
+          setNameList("");
+          setListFromHistory(null);
+        });
+      }
     }
   }
 

@@ -71,3 +71,27 @@ export async function DELETE(req: Request) {
     );
   }
 }
+
+export async function PATCH(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, products } = body;
+
+    if (!id || !products || !Array.isArray(products)) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 }
+      );
+    }
+
+    await sql`
+      UPDATE restocking_bin SET products = ${JSON.stringify(products)}::jsonb, date = NOW() WHERE id = ${id} returning *;
+    `;
+    return NextResponse.json({ message: "Restocking bin updated successfully" }, { status: 200 });
+  } catch(error) {
+    return NextResponse.json(
+      { error: "Internal server error", details: String(error) },
+      { status: 500 }
+    );
+  }
+}
