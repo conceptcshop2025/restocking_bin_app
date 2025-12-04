@@ -6,9 +6,10 @@ import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
+import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "2.5.4";
+  const appVersion:string = "2.6.4";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -20,6 +21,7 @@ export default function Home() {
   const [showHistoryListModal, setShowHistoryListModal] = useState<boolean>(false);
   const [listFromHistory, setListFromHistory] = useState<HistoryListProps | null>(null);
   const [latestSavedUpc, setLatestSavedUpc] = useState<string>("");
+  const [searchUpcInput, setSearchUpcInput] = useState<string>("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -198,6 +200,10 @@ export default function Home() {
     if (productPosition) {
       productPosition.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+
+    setTimeout(() => {
+      setSearchUpcInput("");
+    }, 1000);
   }
 
   return (
@@ -222,7 +228,17 @@ export default function Home() {
           <p className="mb-4"><small>V.{appVersion}</small></p>
           <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full">
             <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
-            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
+            <div className="flex justify-between items-center gap-2">
+              <label htmlFor="upc">Ajoute produit: </label>
+              <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
+            </div>
+            <div className="flex justify-between items-center gap-2">
+              <label htmlFor="upc">Chercher un produit: </label>
+              <input type="text" id="search-upc" placeholder="UPC" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
+              <button className="bg-sky-200 py-2 px-4 rounded-md" onClick={() => {latestAddedProduct(searchUpcInput)}}>
+                <MagnifyingGlassIcon className="size-6 text-blue-700"/>
+              </button>
+            </div>
             <div className="action-buttons flex gap-4 justify-end items-start">
               <div className="actions-group flex flex-col gap-2">
                 <button className={`add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer ${ showInputNameList && nameList.length === 0 && 'pointer-events-none bg-neutral-400' }`} onClick={() => saveList()}>Garder la liste</button>
