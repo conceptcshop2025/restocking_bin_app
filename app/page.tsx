@@ -7,7 +7,6 @@ import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Home() {
   const appVersion:string = "2.6.5";
