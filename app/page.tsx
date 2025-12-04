@@ -7,9 +7,10 @@ import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Home() {
-  const appVersion:string = "2.6.4";
+  const appVersion:string = "2.6.5";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -199,6 +200,8 @@ export default function Home() {
     const productPosition = document.getElementById(upc);
     if (productPosition) {
       productPosition.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      initToast({type: "error", message: "N'est pas possible de trouver le produit avec le code UPC ajouté." });
     }
 
     setTimeout(() => {
@@ -226,36 +229,36 @@ export default function Home() {
         <section className="flex flex-col items-center justify-center py-2">
           <h1 className="text-4xl font-bold">Liste des produits</h1>
           <p className="mb-4"><small>V.{appVersion}</small></p>
-          <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full">
-            <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
-            <div className="flex justify-between items-center gap-2">
-              <label htmlFor="upc">Ajoute produit: </label>
-              <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
-            </div>
-            <div className="flex justify-between items-center gap-2">
-              <label htmlFor="upc">Chercher un produit: </label>
-              <input type="text" id="search-upc" placeholder="UPC" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
-              <button className="bg-sky-200 py-2 px-4 rounded-md" onClick={() => {latestAddedProduct(searchUpcInput)}}>
-                <MagnifyingGlassIcon className="size-6 text-blue-700"/>
-              </button>
-            </div>
-            <div className="action-buttons flex gap-4 justify-end items-start">
-              <div className="actions-group flex flex-col gap-2">
-                <button className={`add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer ${ showInputNameList && nameList.length === 0 && 'pointer-events-none bg-neutral-400' }`} onClick={() => saveList()}>Garder la liste</button>
-                <div className="manual-name-list">
-                  <input type="checkbox" onChange={(e) => toggleInputNameList(e.target.checked)} id="show-input-name-list" name="show-input-name-list" />
-                  <label className="ml-2" htmlFor="show-input-name-list">Ajouter manuellement le nom de liste</label>
-                  {
-                    showInputNameList && (
-                      <input type="text" id="name-list" name="name-list" placeholder="Nom de liste" className="border border-zinc-300 rounded-md px-2 py-2 block w-full" value={nameList} onChange={(e) => setNameList(e.target.value)} />
-                    )
-                  }
-                </div>
-              </div>
-              <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { setShowHistoryListModal(true) }}>Historique des listes</button>
-            </div>
-          </div>
         </section>
+        <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full sticky top-0">
+          <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
+          <div className="flex justify-between items-center gap-2">
+            <label htmlFor="upc">Ajoute produit: </label>
+            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
+          </div>
+          <div className="flex justify-between items-center gap-2">
+            <label htmlFor="upc">Chercher un produit: </label>
+            <input type="text" id="search-upc" placeholder="UPC" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
+            <button className="bg-sky-200 py-2 px-4 rounded-md hover:bg-sky-300 duration-300 ease-in-out cursor-pointer" onClick={() => {latestAddedProduct(searchUpcInput)}}>
+              <MagnifyingGlassIcon className="size-6 text-blue-700"/>
+            </button>
+          </div>
+          <div className="action-buttons flex gap-4 justify-end items-start">
+            <div className="actions-group flex flex-col gap-2">
+              <button className={`add-product bg-green-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out cursor-pointer ${ showInputNameList && nameList.length === 0 && 'pointer-events-none bg-neutral-400' }`} onClick={() => saveList()}>Garder la liste</button>
+              <div className="manual-name-list">
+                <input type="checkbox" onChange={(e) => toggleInputNameList(e.target.checked)} id="show-input-name-list" name="show-input-name-list" />
+                <label className="ml-2" htmlFor="show-input-name-list">Ajouter manuellement le nom de liste</label>
+                {
+                  showInputNameList && (
+                    <input type="text" id="name-list" name="name-list" placeholder="Nom de liste" className="border border-zinc-300 rounded-md px-2 py-2 block w-full" value={nameList} onChange={(e) => setNameList(e.target.value)} />
+                  )
+                }
+              </div>
+            </div>
+            <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { setShowHistoryListModal(true) }}>Historique des listes</button>
+          </div>
+        </div>
         {
           isLoading ?
             <Loader /> :

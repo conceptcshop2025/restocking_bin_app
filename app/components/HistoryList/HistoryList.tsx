@@ -58,7 +58,7 @@ export default function HistoryList({onClose, onToast, onSelectItem}: HistoryLis
   }
 
   return (
-    <div className="modal fixed top-0 left-0 w-full h-full bg-neutral-900/50 bg-opacity-75 flex items-center justify-center">
+    <div className="modal fixed top-0 left-0 w-full h-full bg-neutral-900/50 bg-opacity-75 flex items-center justify-center z-20">
       <div className="modal-content relative bg-neutral-50 p-4 rounded-md min-w-[500px] flex flex-col items-end justify-start max-h-[90dvh] overflow-y-auto">
         <span className="close-button text-8xl text-neutral-900 cursor-pointer leading-none" onClick={onClose}>&times;</span>
         {
