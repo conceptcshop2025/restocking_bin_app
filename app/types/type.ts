@@ -13,6 +13,7 @@ export type Product = {
 
 export type ModalContent = {
   content: Element | null;
+  type?: "image" | "bin-validator";
   onClose: () => void;
 }
 
@@ -37,4 +38,8 @@ export type HistoryListProps = {
   name: string;
   date: string;
   products: Product[];
+}
+
+export type BinValidatorProps = {
+  binLocations: string[] | string;
 }

@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 
 type Props = Omit<ModalContent, "content"> & { content: ReactNode };
 
-export default function Modal({content, onClose}: Props) {
+export default function Modal({content, onClose, type}: Props) {
   return (
     <div className="modal fixed top-0 left-0 w-full h-full bg-neutral-900/50 bg-opacity-75 flex items-center justify-center z-20">
       <div className="modal-content relative max-h-[90dvh]">

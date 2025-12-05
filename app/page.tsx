@@ -1,19 +1,20 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { Product, ToastProps, HistoryListProps } from "./types/type";
+import { Product, ToastProps, HistoryListProps, BinValidatorProps } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
+import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "2.6.7";
+  const appVersion:string = "2.7.7";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
-  const [contentModal, setContentModal] = useState<{ content: React.ReactNode | null; onClose: () => void }>({content: null, onClose: () => {}});
+  const [contentModal, setContentModal] = useState<{ content: React.ReactNode | null; onClose: () => void; type?: string }>({content: null, onClose: () => {}, type: undefined});
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
   const [showInputNameList, setShowInputNameList] = useState<boolean>(false);
@@ -208,6 +209,15 @@ export default function Home() {
     }, 1000);
   }
 
+  function validateBin(binLocations:string[] | string) {
+
+    setContentModal({
+      content: <BinValidator binLocations={binLocations} />,
+      type: "bin-validator",
+      onClose: () => setContentModal({content: null, onClose: () => {}})
+    })
+  }
+
   return (
     <div>
       <main>
@@ -293,8 +303,8 @@ export default function Home() {
                                 <Image 
                                   src={product.imageUrl || ''}
                                   alt="product-image"
-                                  width={100}
-                                  height={540}
+                                  width={1920}
+                                  height={1080}
                                   className="rounded-lg h-[90dvh] w-full" />
                               ) as React.ReactNode,
                               onClose: () => setContentModal({content: null, onClose: () => {}})
@@ -325,7 +335,7 @@ export default function Home() {
                         <button className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full ${product.restocked && 'bg-red-600'}`} onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>
                           { product.restocked ? "Annuler" : "Fini" }
                         </button>
-                        <button className="py-2 px-4 bg-sky-400 cursor-pointer rounded-md text-neutral-100 w-full">Valider Bin</button>
+                        <button className="py-2 px-4 bg-sky-400 cursor-pointer rounded-md text-neutral-100 w-full" onClick={() => validateBin(product.binLocation)}>Valider Bin</button>
                       </div>
                     </div>
                   )
