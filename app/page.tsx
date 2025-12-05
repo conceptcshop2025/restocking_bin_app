@@ -10,7 +10,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "2.7.7";
+  const appVersion:string = "2.8.7";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -79,7 +79,7 @@ export default function Home() {
         }
         setProductList(prevList => [...prevList, newProduct]);
       }
-      latestAddedProduct(data.data[0].barcode);
+      setTimeout(() => {latestAddedProduct(data.data[0].barcode)}, 200);
       setUpc("");
     })
     .catch((error) => {
