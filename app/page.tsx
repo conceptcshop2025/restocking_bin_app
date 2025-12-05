@@ -9,7 +9,7 @@ import HistoryList from "./components/HistoryList/HistoryList";
 import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "2.6.5";
+  const appVersion:string = "2.6.7";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -229,7 +229,7 @@ export default function Home() {
           <h1 className="text-4xl font-bold">Liste des produits</h1>
           <p className="mb-4"><small>V.{appVersion}</small></p>
         </section>
-        <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full sticky top-0">
+        <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full sticky top-0 items-start">
           <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
           <div className="flex justify-between items-center gap-2">
             <label htmlFor="upc">Ajoute produit: </label>
@@ -255,7 +255,7 @@ export default function Home() {
                 }
               </div>
             </div>
-            <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { setShowHistoryListModal(true) }}>Historique des listes</button>
+            <button className="add-product bg-sky-600 py-2 px-4 rounded-md text-neutral-100 hover:bg-sky-800 duration-300 ease-in-out cursor-pointer" onClick={() => { setShowHistoryListModal(true) }}>Historique</button>
           </div>
         </div>
         {
@@ -267,14 +267,12 @@ export default function Home() {
                   <p className="py-4 px-2 text-2xl">{ listFromHistory.name }</p>
                 )
               }
-              <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full">
-                <p>Image</p>
-                <p>Nom du produit</p>
-                <p className="text-center">SKU</p>
+              <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center">
+                <p>Info du produit</p>
                 <p className="text-center">UPC</p>
-                <p className="text-center">Quantité Disponible</p>
-                <p className="text-center">Quantité reservé</p>
-                <p className="text-center">Quantité à approvisionner</p>
+                <p className="text-center">Qty Disponible</p>
+                <p className="text-center">Qty reservé</p>
+                <p className="text-center">QTY à approv...</p>
                 <p className="text-center">HTSUS</p>
                 <p className="text-center">Bin</p>
                 <p className="text-center">Statut</p>
@@ -282,30 +280,30 @@ export default function Home() {
               {
                 productList.map((product:Product, index:number) => {
                   return (
-                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index} ${product.restocked && 'checked-product bg-green-600'} ${latestSavedUpc === product.upc && 'bg-sky-200'}`} id={product.upc}>
-                      <div className="container-image">
-                        <Image
-                          src={product.imageUrl || ''}
-                          alt={product.name}
-                          width={200}
-                          height={60}
-                          onClick={() => setContentModal({
-                            content: (
-                              <Image 
-                                src={product.imageUrl || ''}
-                                alt="product-image"
-                                width={960}
-                                height={540}
-                                className="rounded-lg h-[90dvh] w-full" />
-                            ) as React.ReactNode,
-                            onClose: () => setContentModal({content: null, onClose: () => {}})
-                          })}
-                          className="cursor-pointer" />
-                      </div>
+                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index} ${product.restocked && 'checked-product bg-green-600!'} ${latestSavedUpc === product.upc && 'bg-sky-200'}`} id={product.upc}>
                       <div className="text-sm font-semibold">
+                        <div className="container-image">
+                          <Image
+                            src={product.imageUrl || ''}
+                            alt={product.name}
+                            width={100}
+                            height={60}
+                            onClick={() => setContentModal({
+                              content: (
+                                <Image 
+                                  src={product.imageUrl || ''}
+                                  alt="product-image"
+                                  width={100}
+                                  height={540}
+                                  className="rounded-lg h-[90dvh] w-full" />
+                              ) as React.ReactNode,
+                              onClose: () => setContentModal({content: null, onClose: () => {}})
+                            })}
+                            className="cursor-pointer" />
+                        </div>
                         <h2>{product.name}</h2>
+                        <p className="text-left"><strong>SKU: {product.sku}</strong></p>
                       </div>
-                      <p className="text-center">{product.sku}</p>
                       <p className="text-center">{product.upc}</p>
                       <p className="text-center">{product.quantityAvailable}</p>
                       <p className="text-center">{product.quantityOnHand}</p>
@@ -323,10 +321,11 @@ export default function Home() {
                         }
                         
                       </div>
-                      <div className="flex justify-center">
-                        <button className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit ${product.restocked && 'bg-red-600'}`} onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>
+                      <div className="flex flex-col justify-center item-center gap-4">
+                        <button className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full ${product.restocked && 'bg-red-600'}`} onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>
                           { product.restocked ? "Annuler" : "Fini" }
                         </button>
+                        <button className="py-2 px-4 bg-sky-400 cursor-pointer rounded-md text-neutral-100 w-full">Valider Bin</button>
                       </div>
                     </div>
                   )
