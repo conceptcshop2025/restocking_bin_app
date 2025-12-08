@@ -10,7 +10,7 @@ import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "2.8.7";
+  const appVersion:string = "2.9.7";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -87,20 +87,21 @@ export default function Home() {
     });
   }
 
-  function toggleCheckedProduct(element:HTMLElement) {
+  function toggleCheckedProduct(element:HTMLElement, successItem?:boolean) {
     const parentElement = element.closest('.product-card');
-    if (parentElement?.classList.contains('checked-product')) {
-      parentElement.classList.remove('checked-product', 'bg-green-600');
+    if(successItem) {
+      parentElement?.classList.add('checked-product', 'bg-green-600');
+      element.classList.add('bg-red-600');
+      element.innerText = "Annuler";
+      if (parentElement) updateRestockedStatus(parentElement.id, true);
+      setContentModal({content: null, onClose: () => {}});
+    } else {
+      parentElement?.classList.remove('checked-product', 'bg-green-600');
       element.classList.remove('bg-red-600');
       element.innerText = "Fini";
       if (parentElement) updateRestockedStatus(parentElement.id, false);
-      return;
-    } else if (parentElement) {
-      parentElement.classList.add('checked-product', 'bg-green-600');
-      element.classList.add('bg-red-600');
-      element.innerText = "Annuler";
-      updateRestockedStatus(parentElement.id, true);
     }
+    
     return;
   }
 
@@ -209,13 +210,20 @@ export default function Home() {
     }, 1000);
   }
 
-  function validateBin(binLocations:string[] | string) {
-
+  function validateBin(binLocations:string[] | string, productItem:HTMLElement, onValidate?: (item:HTMLElement) => void) {
     setContentModal({
-      content: <BinValidator binLocations={binLocations} />,
+      content: <BinValidator binLocations={binLocations} productItem={productItem} onValidate={(item, successItem) => toggleCheckedProduct(item, successItem)}/>,
       type: "bin-validator",
       onClose: () => setContentModal({content: null, onClose: () => {}})
     })
+  }
+
+  function disableCheckedItem(element:HTMLElement) {
+    const parentElement = element.closest('.product-card');
+    parentElement?.classList.remove('checked-product', 'bg-green-600');
+    element.classList.remove('bg-red-600');
+    element.innerText = "Fini";
+    if (parentElement) updateRestockedStatus(parentElement.id, false);
   }
 
   return (
@@ -332,10 +340,11 @@ export default function Home() {
                         
                       </div>
                       <div className="flex flex-col justify-center item-center gap-4">
-                        <button className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full ${product.restocked && 'bg-red-600'}`} onClick={ (e) => toggleCheckedProduct(e.currentTarget) }>
+                        <button
+                          className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full ${product.restocked && 'bg-red-600'}`}
+                          onClick={ (e) => !product.restocked ? validateBin(product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
                           { product.restocked ? "Annuler" : "Fini" }
                         </button>
-                        <button className="py-2 px-4 bg-sky-400 cursor-pointer rounded-md text-neutral-100 w-full" onClick={() => validateBin(product.binLocation)}>Valider Bin</button>
                       </div>
                     </div>
                   )
