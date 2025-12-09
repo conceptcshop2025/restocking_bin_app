@@ -7,7 +7,10 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
   const [validateUpcInput, setValidateUpcInput] = useState<string>("");
   const [debouncedUpcInput, setDebouncedUpcInput] = useState<string>("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const inputBinRef = useRef<HTMLInputElement>(null);
   const [productQuantityScanned, setProductQuantityScanned] = useState<number>(0);
+  const [showErrorUpcInput, setShowErrorUpcInput] = useState<boolean>(false);
+  const [showErroBinInput, setShowErrorBinInput] = useState<boolean>(false);
 
   useEffect(() => {
     inputRef.current?.focus();
@@ -15,16 +18,21 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
 
   useEffect(() => {
     if (productItem && validateBinInput === (Array.isArray(binLocations) ? binLocations : [binLocations]).find(location => location === validateBinInput)) {
+      setShowErrorBinInput(false);
       onValidate && onValidate(productItem, true);
     } else {
       onValidate && onValidate(productItem as HTMLElement, false);
+      if (validateBinInput.length > 0) {
+        setShowErrorBinInput(true);
+      }
+      setValidateBinInput("");
     }
   }, [validateBinInput]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedUpcInput(validateUpcInput);
-    }, 500);
+    }, 100);
 
     return () => {
       clearTimeout(handler);
@@ -37,9 +45,22 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
       if (debouncedUpcInput === productUpc) {
         setProductQuantityScanned(prev => prev + 1);
         setValidateUpcInput("");
+
+        if (showErrorUpcInput) {
+          setShowErrorUpcInput(false);
+        }
+      } else {
+        setShowErrorUpcInput(true);
+        setValidateUpcInput("");
       }
     }
   }, [debouncedUpcInput]);
+
+  useEffect(() => {
+    if (productQuantityScanned === productQuantity) {
+      inputBinRef.current?.focus();
+    }
+  }, [productQuantityScanned]);
 
   return (
     <div className="flex flex-col justify-start items-start p-8 gap-4 flex-wrap bg-neutral-50 rounded-md max-w-[90dvw] overflow-y-auto pt-24">
@@ -59,9 +80,13 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
           {
             productQuantityScanned === productQuantity && <CheckCircleIcon className="size-8 text-green-600"/>
           }
+          {
+            showErrorUpcInput && <XCircleIcon className="size-8 text-red-600" />
+          }
       </div>
       <div className="flex justify-center items-center gap-4">
         <input
+          ref={inputBinRef}
           type="text"
           name="space-bin"
           id="space-bin"
@@ -78,6 +103,9 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
             }
           )) :
             <p className="font-sans text-2xl">Il n'y a pas de Bin asginé à ce produit.</p>
+        }
+        {
+          showErroBinInput && <XCircleIcon className="size-8 text-red-600" />
         }
       </div>
     </div>
