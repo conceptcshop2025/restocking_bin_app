@@ -6,11 +6,10 @@ import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
-import { MagnifyingGlassIcon } from "@heroicons/react/16/solid";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "2.9.7";
+  const appVersion:string = "3.0.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -23,6 +22,7 @@ export default function Home() {
   const [listFromHistory, setListFromHistory] = useState<HistoryListProps | null>(null);
   const [latestSavedUpc, setLatestSavedUpc] = useState<string>("");
   const [searchUpcInput, setSearchUpcInput] = useState<string>("");
+  const [debouncedSearchUpcInput, setDebouncedSearchUpcInput] = useState<string>("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -39,6 +39,22 @@ export default function Home() {
       getData(debouncedUpc);
     }
   }, [debouncedUpc]);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchUpcInput(searchUpcInput);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchUpcInput]);
+
+  useEffect(() => {
+    if (debouncedSearchUpcInput) {
+      latestAddedProduct(debouncedSearchUpcInput);
+    }
+  }, [debouncedSearchUpcInput]);
 
   useEffect(() => {
     if(productList.length === 0) return;
@@ -256,9 +272,9 @@ export default function Home() {
           <div className="flex justify-between items-center gap-2">
             <label htmlFor="upc">Chercher un produit: </label>
             <input type="text" id="search-upc" placeholder="UPC" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
-            <button className="bg-sky-200 py-2 px-4 rounded-md hover:bg-sky-300 duration-300 ease-in-out cursor-pointer" onClick={() => {latestAddedProduct(searchUpcInput)}}>
+            {/* <button className="bg-sky-200 py-2 px-4 rounded-md hover:bg-sky-300 duration-300 ease-in-out cursor-pointer" onClick={() => {latestAddedProduct(searchUpcInput)}}>
               <MagnifyingGlassIcon className="size-6 text-blue-700"/>
-            </button>
+            </button> */}
           </div>
           <div className="action-buttons flex gap-4 justify-end items-start">
             <div className="actions-group flex flex-col gap-2">
