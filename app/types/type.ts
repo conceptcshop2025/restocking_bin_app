@@ -42,6 +42,8 @@ export type HistoryListProps = {
 
 export type BinValidatorProps = {
   binLocations: string[] | string;
+  productUpc: string;
+  productQuantity: number;
   productItem?: HTMLElement;
   onValidate?: (item:HTMLElement, successItem:boolean) => void;
 }

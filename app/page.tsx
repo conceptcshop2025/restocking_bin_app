@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { Product, ToastProps, HistoryListProps, BinValidatorProps } from "./types/type";
+import { Product, ToastProps, HistoryListProps } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
@@ -226,9 +226,14 @@ export default function Home() {
     }, 1000);
   }
 
-  function validateBin(binLocations:string[] | string, productItem:HTMLElement, onValidate?: (item:HTMLElement) => void) {
+  function validateBin(productUpc:string, productQuantity:number, binLocations:string[] | string, productItem:HTMLElement, onValidate?: (item:HTMLElement) => void) {
     setContentModal({
-      content: <BinValidator binLocations={binLocations} productItem={productItem} onValidate={(item, successItem) => toggleCheckedProduct(item, successItem)}/>,
+      content: <BinValidator
+        productUpc={productUpc}
+        productQuantity={productQuantity}
+        binLocations={binLocations}
+        productItem={productItem}
+        onValidate={(item, successItem) => toggleCheckedProduct(item, successItem)} />,
       type: "bin-validator",
       onClose: () => setContentModal({content: null, onClose: () => {}})
     })
@@ -272,9 +277,6 @@ export default function Home() {
           <div className="flex justify-between items-center gap-2">
             <label htmlFor="upc">Chercher un produit: </label>
             <input type="text" id="search-upc" placeholder="UPC" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
-            {/* <button className="bg-sky-200 py-2 px-4 rounded-md hover:bg-sky-300 duration-300 ease-in-out cursor-pointer" onClick={() => {latestAddedProduct(searchUpcInput)}}>
-              <MagnifyingGlassIcon className="size-6 text-blue-700"/>
-            </button> */}
           </div>
           <div className="action-buttons flex gap-4 justify-end items-start">
             <div className="actions-group flex flex-col gap-2">
@@ -358,7 +360,7 @@ export default function Home() {
                       <div className="flex flex-col justify-center item-center gap-4">
                         <button
                           className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full ${product.restocked && 'bg-red-600'}`}
-                          onClick={ (e) => !product.restocked ? validateBin(product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
+                          onClick={ (e) => !product.restocked ? validateBin(product.upc, product.quantityToReStock, product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
                           { product.restocked ? "Annuler" : "Fini" }
                         </button>
                       </div>
