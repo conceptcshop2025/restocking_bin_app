@@ -9,7 +9,7 @@ import HistoryList from "./components/HistoryList/HistoryList";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "3.0.0";
+  const appVersion:string = "3.2.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
