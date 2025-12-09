@@ -59,6 +59,7 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
   useEffect(() => {
     if (productQuantityScanned === productQuantity) {
       inputBinRef.current?.focus();
+      inputBinRef.current?.classList.remove('pointer-events-none');
     }
   }, [productQuantityScanned]);
 
@@ -91,7 +92,7 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
           name="space-bin"
           id="space-bin"
           placeholder="BIN"
-          className="border border-zinc-300 rounded-md px-2 py-4 h-fit"
+          className="border border-zinc-300 rounded-md px-2 py-4 h-fit pointer-events-none"
           value={validateBinInput}
           onChange={(e) => setValidateBinInput(e.target.value)} />
         {
