@@ -22,10 +22,10 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
       onValidate && onValidate(productItem, true);
     } else {
       onValidate && onValidate(productItem as HTMLElement, false);
-      if (validateBinInput.length > 0) {
+      if (validateBinInput.length >= 11) {
         setShowErrorBinInput(true);
+        setValidateBinInput("");
       }
-      setValidateBinInput("");
     }
   }, [validateBinInput]);
 
