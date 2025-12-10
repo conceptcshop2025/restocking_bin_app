@@ -9,7 +9,7 @@ import HistoryList from "./components/HistoryList/HistoryList";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "3.5.0";
+  const appVersion:string = "3.5.1";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -80,10 +80,10 @@ export default function Home() {
       const findedProductInProductList = productList.find(key => key.upc === data.data[0].barcode);
       if (findedProductInProductList) {
         findedProductInProductList.quantityToReStock += 1;
-        const getQtyInput = document.getElementById(`qty-to-re-stock-for-product--${findedProductInProductList.upc}`) as HTMLInputElement | null;
+        /* const getQtyInput = document.getElementById(`qty-to-re-stock-for-product--${findedProductInProductList.upc}`) as HTMLInputElement | null; 
         if (getQtyInput) {
           getQtyInput.value = findedProductInProductList.quantityToReStock.toString();
-        }
+        }*/
       } else {
         const newProduct: Product = {
           sku: data.data[0].sku || "N/A",
@@ -354,8 +354,8 @@ export default function Home() {
                       <p className="text-center">{product.upc}</p>
                       <p className="text-center">{product.quantityAvailable}</p>
                       <p className="text-center">{product.quantityOnHand}</p>
-                      {/* <p className="text-center">{product.quantityToReStock}</p> */}
-                      <p className="text-center">
+                      <p className="text-center">{product.quantityToReStock}</p>
+                      {/* <p className="text-center">
                         <input
                           type="number"
                           name="quantity-to-re-stock"
@@ -363,7 +363,7 @@ export default function Home() {
                           className="w-full text-center"
                           defaultValue={product.quantityToReStock}
                           onBlur={(e) => updateProductQtyToRestock(product.upc, Number(e.currentTarget.value))} />
-                      </p>
+                      </p> */}
                       <p className="text-center">{product.htsus || "N/A"}</p>
                       <div className="flex justify-start gap-4 flex-wrap">
                         {
