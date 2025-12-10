@@ -9,7 +9,7 @@ import HistoryList from "./components/HistoryList/HistoryList";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "3.3.0";
+  const appVersion:string = "3.4.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -247,6 +247,13 @@ export default function Home() {
     if (parentElement) updateRestockedStatus(parentElement.id, false);
   }
 
+  function updateProductQtyToRestock(productUpc:string, newValue:number) {
+    const findProduct = productList.find(key => key.upc === productUpc);
+    if (findProduct) {
+      findProduct.quantityToReStock = newValue;
+    }
+  }
+
   return (
     <div>
       <main>
@@ -343,7 +350,16 @@ export default function Home() {
                       <p className="text-center">{product.upc}</p>
                       <p className="text-center">{product.quantityAvailable}</p>
                       <p className="text-center">{product.quantityOnHand}</p>
-                      <p className="text-center">{product.quantityToReStock}</p>
+                      {/* <p className="text-center">{product.quantityToReStock}</p> */}
+                      <p className="text-center">
+                        <input
+                          type="number"
+                          name="quantity-to-re-stock"
+                          id={`quantity-to-re-stock--${index}`}
+                          className="w-full text-center"
+                          defaultValue={product.quantityToReStock}
+                          onBlur={(e) => updateProductQtyToRestock(product.upc, Number(e.currentTarget.value))} />
+                      </p>
                       <p className="text-center">{product.htsus || "N/A"}</p>
                       <div className="flex justify-start gap-4 flex-wrap">
                         {
