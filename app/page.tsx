@@ -9,7 +9,7 @@ import HistoryList from "./components/HistoryList/HistoryList";
 import BinValidator from "./components/BinValidator/BinValidator";
 
 export default function Home() {
-  const appVersion:string = "3.4.0";
+  const appVersion:string = "3.5.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -80,6 +80,10 @@ export default function Home() {
       const findedProductInProductList = productList.find(key => key.upc === data.data[0].barcode);
       if (findedProductInProductList) {
         findedProductInProductList.quantityToReStock += 1;
+        const getQtyInput = document.getElementById(`qty-to-re-stock-for-product--${findedProductInProductList.upc}`) as HTMLInputElement | null;
+        if (getQtyInput) {
+          getQtyInput.value = findedProductInProductList.quantityToReStock.toString();
+        }
       } else {
         const newProduct: Product = {
           sku: data.data[0].sku || "N/A",
@@ -355,7 +359,7 @@ export default function Home() {
                         <input
                           type="number"
                           name="quantity-to-re-stock"
-                          id={`quantity-to-re-stock--${index}`}
+                          id={`qty-to-re-stock-for-product--${product.upc}`}
                           className="w-full text-center"
                           defaultValue={product.quantityToReStock}
                           onBlur={(e) => updateProductQtyToRestock(product.upc, Number(e.currentTarget.value))} />
