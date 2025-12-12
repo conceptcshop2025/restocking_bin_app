@@ -7,9 +7,10 @@ import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
 import HistoryList from "./components/HistoryList/HistoryList";
 import BinValidator from "./components/BinValidator/BinValidator";
+import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.5.1";
+  const appVersion:string = "3.6.1";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -251,6 +252,11 @@ export default function Home() {
     if (parentElement) updateRestockedStatus(parentElement.id, false);
   }
 
+  function removeProductFromList(upc:string) {
+    const listFiltered = productList.filter(key => key.upc !== upc);
+    setProductList(listFiltered);
+  }
+
   function updateProductQtyToRestock(productUpc:string, newValue:number) {
     const findProduct = productList.find(key => key.upc === productUpc);
     if (findProduct) {
@@ -314,7 +320,7 @@ export default function Home() {
                   <p className="py-4 px-2 text-2xl">{ listFromHistory.name }</p>
                 )
               }
-              <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center">
+              <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center sticky top-[88px] bg-neutral-100">
                 <p>Info du produit</p>
                 <p className="text-center">UPC</p>
                 <p className="text-center">Qty Disponible</p>
@@ -377,11 +383,16 @@ export default function Home() {
                         }
                         
                       </div>
-                      <div className="flex flex-col justify-center item-center gap-4">
+                      <div className="flex justify-center item-center gap-2">
                         <button
-                          className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full ${product.restocked && 'bg-red-600'}`}
+                          className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-4/6 ${product.restocked && 'bg-red-600'}`}
                           onClick={ (e) => !product.restocked ? validateBin(product.upc, product.quantityToReStock, product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
                           { product.restocked ? "Annuler" : "Fini" }
+                        </button>
+                        <button
+                          className="py-2 px-2 bg-red-600 cursor-pointer rounded-md w-2/6 flex justify-center items-center hover:bg-red-800 duration-300 ease-in-out"
+                          onClick={() => removeProductFromList(product.upc)}>
+                          <TrashIcon className="text-neutral-50 size-6" />
                         </button>
                       </div>
                     </div>
