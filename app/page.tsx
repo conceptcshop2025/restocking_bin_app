@@ -10,7 +10,7 @@ import BinValidator from "./components/BinValidator/BinValidator";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.6.1";
+  const appVersion:string = "3.6.5";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -320,85 +320,99 @@ export default function Home() {
                   <p className="py-4 px-2 text-2xl">{ listFromHistory.name }</p>
                 )
               }
-              <div className="heading-table grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center sticky top-[88px] bg-neutral-100">
-                <p>Info du produit</p>
-                <p className="text-center">UPC</p>
-                <p className="text-center">Qty Disponible</p>
-                <p className="text-center">Qty reservé</p>
-                <p className="text-center">QTY à approv...</p>
-                <p className="text-center">HTSUS</p>
-                <p className="text-center">Bin</p>
-                <p className="text-center">Statut</p>
-              </div>
-              {
-                productList.map((product:Product, index:number) => {
-                  return (
-                    <div key={index} className={`product-card grid grid-cols-6 gap-4 font-bold border-b-2 border-zinc-300 p-2 w-full items-center item--${index} ${product.restocked && 'checked-product bg-green-600!'} ${latestSavedUpc === product.upc && 'bg-sky-200'}`} id={product.upc}>
-                      <div className="text-sm font-semibold">
-                        <div className="container-image">
-                          <Image
-                            src={product.imageUrl || ''}
-                            alt={product.name}
-                            width={100}
-                            height={60}
-                            onClick={() => setContentModal({
-                              content: (
-                                <Image 
-                                  src={product.imageUrl || ''}
-                                  alt="product-image"
-                                  width={1920}
-                                  height={1080}
-                                  className="rounded-lg h-[90dvh] w-full" />
-                              ) as React.ReactNode,
-                              onClose: () => setContentModal({content: null, onClose: () => {}})
-                            })}
-                            className="cursor-pointer" />
-                        </div>
-                        <h2>{product.name}</h2>
-                        <p className="text-left"><strong>SKU: {product.sku}</strong></p>
-                      </div>
-                      <p className="text-center">{product.upc}</p>
-                      <p className="text-center">{product.quantityAvailable}</p>
-                      <p className="text-center">{product.quantityOnHand}</p>
-                      <p className="text-center">{product.quantityToReStock}</p>
-                      {/* <p className="text-center">
-                        <input
-                          type="number"
-                          name="quantity-to-re-stock"
-                          id={`qty-to-re-stock-for-product--${product.upc}`}
-                          className="w-full text-center"
-                          defaultValue={product.quantityToReStock}
-                          onBlur={(e) => updateProductQtyToRestock(product.upc, Number(e.currentTarget.value))} />
-                      </p> */}
-                      <p className="text-center">{product.htsus || "N/A"}</p>
-                      <div className="flex justify-start gap-4 flex-wrap">
-                        {
-                          product.binLocation.length > 0 ? (
-                            (Array.isArray(product.binLocation) ? product.binLocation : [product.binLocation]).map((location: string, idx: number) => {
-                              return (
-                                <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{location}</span>
-                              )
-                            })
-                          ) : <p className="font-sans">Il n'y a pas de Bin asginé à ce produit.</p>
-                        }
-                        
-                      </div>
-                      <div className="flex justify-center item-center gap-2">
-                        <button
-                          className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-4/6 ${product.restocked && 'bg-red-600'}`}
-                          onClick={ (e) => !product.restocked ? validateBin(product.upc, product.quantityToReStock, product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
-                          { product.restocked ? "Annuler" : "Fini" }
-                        </button>
-                        <button
-                          className="py-2 px-2 bg-red-600 cursor-pointer rounded-md w-2/6 flex justify-center items-center hover:bg-red-800 duration-300 ease-in-out"
-                          onClick={() => removeProductFromList(product.upc)}>
-                          <TrashIcon className="text-neutral-50 size-6" />
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })
-              }
+              <table className="table-fixed w-full">
+                <thead className="sticky top-[88px] bg-neutral-200">
+                  {
+                    productList.length > 0 && (
+                      <tr>
+                        <th className="py-4">Info du produit</th>
+                        <th className="text-center py-4">UPC</th>
+                        <th className="text-center py-4">Qty Disponible</th>
+                        <th className="text-center py-4">Qty reservé</th>
+                        <th className="text-center py-4">QTY à approv...</th>
+                        <th className="text-center py-4">HTSUS</th>
+                        <th className="text-center py-4">Bin</th>
+                        <th className="text-center py-4">Statut</th>
+                      </tr>
+                    )
+                  }
+                </thead>
+                <tbody>
+                  {
+                    productList.map((product:Product, index:number) => {
+                      return (
+                        <tr
+                          key={index}
+                          className={`product-card font-bold border-b-2 border-zinc-300 item--${index} ${product.restocked && 'checked-product bg-green-600!'} ${latestSavedUpc === product.upc && 'bg-sky-200'}`}
+                          id={product.upc}>
+                          <td className="p-4 text-sm font-semibold">
+                            <div className="container-image">
+                              <Image
+                                src={product.imageUrl || ''}
+                                alt={product.name}
+                                width={100}
+                                height={60}
+                                onClick={() => setContentModal({
+                                  content: (
+                                    <Image 
+                                      src={product.imageUrl || ''}
+                                      alt="product-image"
+                                      width={1920}
+                                      height={1080}
+                                      className="rounded-lg h-[90dvh] w-full" />
+                                  ) as React.ReactNode,
+                                  onClose: () => setContentModal({content: null, onClose: () => {}})
+                                })}
+                                className="cursor-pointer" />
+                            </div>
+                            <h2>{product.name}</h2>
+                            <p className="text-left"><strong>SKU: {product.sku}</strong></p>
+                          </td>
+                          <td className="text-center">{product.upc}</td>
+                          <td className="text-center">{product.quantityAvailable}</td>
+                          <td className="text-center">{product.quantityOnHand}</td>
+                          <td className="text-center">{product.quantityToReStock}</td>
+                          {/* <p className="text-center">
+                            <input
+                              type="number"
+                              name="quantity-to-re-stock"
+                              id={`qty-to-re-stock-for-product--${product.upc}`}
+                              className="w-full text-center"
+                              defaultValue={product.quantityToReStock}
+                              onBlur={(e) => updateProductQtyToRestock(product.upc, Number(e.currentTarget.value))} />
+                          </p> */}
+                          <td className="text-center">{product.htsus || "N/A"}</td>
+                          <td>
+                            <div className="flex flex-wrap gap-2">
+                              {
+                                product.binLocation.length > 0 ? (
+                                  (Array.isArray(product.binLocation) ? product.binLocation : [product.binLocation]).map((location: string, idx: number) => {
+                                    return (
+                                      <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{location}</span>
+                                    )
+                                  })
+                                ) : <p className="font-sans">Il n'y a pas de Bin asginé à ce produit.</p>
+                              }
+                            </div>
+                          </td>
+                          <td className="p-4">
+                            <button
+                              className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full mb-2 ${product.restocked && 'bg-red-600'}`}
+                              onClick={ (e) => !product.restocked ? validateBin(product.upc, product.quantityToReStock, product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
+                              { product.restocked ? "Annuler" : "Fini" }
+                            </button>
+                            <button
+                              className="py-2 px-2 bg-red-600 cursor-pointer rounded-md w-full flex justify-center items-center hover:bg-red-800 duration-300 ease-in-out"
+                              onClick={() => removeProductFromList(product.upc)}>
+                              <TrashIcon className="text-neutral-50 size-6" />
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  }
+                </tbody>
+              </table>
             </section>
         }
       </main>

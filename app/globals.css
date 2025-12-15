@@ -25,8 +25,8 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-.heading-table,
+/* .heading-table,
 .product-card {
-  /* grid-template-columns: 250px 180px repeat(4, 80px) 300px 100px; */
-  grid-template-columns: 0.217fr 0.157fr repeat(4, 0.069fr) 0.261fr 0.087fr;
-}
+  grid-template-columns: 240px 158px repeat(4, 80px) 250px 160px;
+  grid-template-columns: 0.2128fr 0.1401fr repeat(4, 0.0709fr) 0.2216fr 0.1419fr;
+} */
