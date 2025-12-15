@@ -10,7 +10,7 @@ import BinValidator from "./components/BinValidator/BinValidator";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.6.5";
+  const appVersion:string = "3.7.5";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -219,7 +219,16 @@ export default function Home() {
 
   function latestAddedProduct(upc:string) {
     setLatestSavedUpc(upc);
-    const productPosition = document.getElementById(upc);
+
+    let productPosition = null;
+    const findProductBySku = productList.find(key => key.sku === upc);
+
+    if (findProductBySku) {
+      productPosition = document.getElementById(findProductBySku.upc);
+    } else {
+      productPosition = document.getElementById(upc);
+    }
+
     if (productPosition) {
       productPosition.scrollIntoView({ behavior: 'smooth', block: 'center' });
     } else {
@@ -293,7 +302,7 @@ export default function Home() {
           </div>
           <div className="flex justify-between items-center gap-2">
             <label htmlFor="upc">Chercher un produit: </label>
-            <input type="text" id="search-upc" placeholder="UPC" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
+            <input type="text" id="search-upc" placeholder="UPC ou SKU" name="search-upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={searchUpcInput} onChange={(e) => setSearchUpcInput(e.target.value)} />
           </div>
           <div className="action-buttons flex gap-4 justify-end items-start">
             <div className="actions-group flex flex-col gap-2">
@@ -343,7 +352,7 @@ export default function Home() {
                       return (
                         <tr
                           key={index}
-                          className={`product-card font-bold border-b-2 border-zinc-300 item--${index} ${product.restocked && 'checked-product bg-green-600!'} ${latestSavedUpc === product.upc && 'bg-sky-200'}`}
+                          className={`product-card font-bold border-b-2 border-zinc-300 item--${index} ${product.restocked && 'checked-product bg-green-600!'} ${(latestSavedUpc === product.upc || latestSavedUpc === product.sku) && 'bg-sky-200'}`}
                           id={product.upc}>
                           <td className="p-4 text-sm font-semibold">
                             <div className="container-image">
