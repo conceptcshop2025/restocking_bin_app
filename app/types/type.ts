@@ -9,6 +9,7 @@ export type Product = {
   htsus: string | null;
   imageUrl: string;
   restocked: boolean;
+  bAlias: string[] | null;
 }
 
 export type ModalContent = {

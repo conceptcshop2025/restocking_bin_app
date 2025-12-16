@@ -10,7 +10,7 @@ import BinValidator from "./components/BinValidator/BinValidator";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.7.5";
+  const appVersion:string = "3.7.6";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -97,6 +97,7 @@ export default function Home() {
           htsus: data.data[0].htsUS || null,
           imageUrl: data.data[0].imageURL || "",
           restocked: false,
+          bAlias: data.data[0].barcodeAliases || [],
         }
         setProductList(prevList => [...prevList, newProduct]);
       }
@@ -377,7 +378,23 @@ export default function Home() {
                             <h2>{product.name}</h2>
                             <p className="text-left"><strong>SKU: {product.sku}</strong></p>
                           </td>
-                          <td className="text-center">{product.upc}</td>
+                          <td className="text-center">
+                            <span className="block">{ product.upc }</span>
+                            {
+                              product.bAlias &&
+                                product.bAlias.length > 0 && 
+                                  <div className="b-alias">
+                                    <span className="text-xs">B-Alias:</span>
+                                    <ul>
+                                      {
+                                        product.bAlias.map(code => (
+                                          <li className="text-xs">{ code }</li>
+                                        ))
+                                      }
+                                    </ul>
+                                  </div>
+                            }
+                          </td>
                           <td className="text-center">{product.quantityAvailable}</td>
                           <td className="text-center">{product.quantityOnHand}</td>
                           <td className="text-center">{product.quantityToReStock}</td>
