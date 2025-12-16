@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
-import { Product, ToastProps, HistoryListProps } from "./types/type";
+import { Product, ToastProps, HistoryListProps, QtyToRestockProps } from "./types/type";
 import Modal from "./components/Modal/Modal";
 import { Loader } from "./components/Loader/Loader";
 import Toast from "./components/Toast/Toast";
@@ -10,7 +10,7 @@ import BinValidator from "./components/BinValidator/BinValidator";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.8.6";
+  const appVersion:string = "3.9.6";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -24,6 +24,7 @@ export default function Home() {
   const [latestSavedUpc, setLatestSavedUpc] = useState<string>("");
   const [searchUpcInput, setSearchUpcInput] = useState<string>("");
   const [debouncedSearchUpcInput, setDebouncedSearchUpcInput] = useState<string>("");
+  const [qtyToRestockListByProduct, setQtyToRestockListByProduct] = useState<QtyToRestockProps[]>([]);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -81,10 +82,13 @@ export default function Home() {
       const findedProductInProductList = productList.find(key => key.upc === data.data[0].barcode);
       if (findedProductInProductList) {
         findedProductInProductList.quantityToReStock += 1;
-        /* const getQtyInput = document.getElementById(`qty-to-re-stock-for-product--${findedProductInProductList.upc}`) as HTMLInputElement | null; 
-        if (getQtyInput) {
-          getQtyInput.value = findedProductInProductList.quantityToReStock.toString();
-        }*/
+        setQtyToRestockListByProduct(list =>
+          list.map(item => 
+            item.upc === data.data[0].barcode
+              ? { ...item, qty: item.qty + 1 }
+              : item
+          )
+        )
       } else {
         const newProduct: Product = {
           sku: data.data[0].sku || "N/A",
@@ -92,7 +96,7 @@ export default function Home() {
           name: data.data[0].name || "N/A",
           quantityAvailable: data.data[0].quantityAvailable || 0,
           quantityOnHand: data.data[0].quantityOnHand || 0,
-          quantityToReStock: 1,
+          quantityToReStock: qtyToRestockListByProduct.find(key => key.upc === data.data[0].barcode)?.qty || 1,
           binLocation: data.data[0].binLocations || [],
           htsus: data.data[0].htsUS || null,
           imageUrl: data.data[0].imageURL || "",
@@ -100,6 +104,7 @@ export default function Home() {
           bAlias: data.data[0].barcodeAliases || [],
         }
         setProductList(prevList => [...prevList, newProduct]);
+        setQtyToRestockListByProduct(list => [...list, { upc: data.data[0].barcode, qty: 1 }]);
       }
       setTimeout(() => {latestAddedProduct(data.data[0].barcode)}, 200);
       setUpc("");
@@ -268,13 +273,6 @@ export default function Home() {
     setProductList(listFiltered);
   }
 
-  function updateProductQtyToRestock(productUpc:string, newValue:number) {
-    const findProduct = productList.find(key => key.upc === productUpc);
-    if (findProduct) {
-      findProduct.quantityToReStock = newValue;
-    }
-  }
-
   return (
     <div>
       <main>
@@ -398,16 +396,29 @@ export default function Home() {
                           </td>
                           <td className="text-center">{product.quantityAvailable}</td>
                           <td className="text-center">{product.quantityOnHand}</td>
-                          <td className="text-center">{product.quantityToReStock}</td>
-                          {/* <p className="text-center">
-                            <input
-                              type="number"
-                              name="quantity-to-re-stock"
-                              id={`qty-to-re-stock-for-product--${product.upc}`}
-                              className="w-full text-center"
-                              defaultValue={product.quantityToReStock}
-                              onBlur={(e) => updateProductQtyToRestock(product.upc, Number(e.currentTarget.value))} />
-                          </p> */}
+                          <td className="text-center">
+                            <span>
+                              <input
+                                type="number"
+                                name="quantity-to-re-stock"
+                                id={`qty-to-re-stock-for-product--${product.upc}`}
+                                className="w-full text-center"
+                                min={1}
+                                value={qtyToRestockListByProduct.find(key => key.upc === product.upc)?.qty ?? 1}
+                                onChange={(e) => {
+                                  const value = Number(e.currentTarget.value);
+
+                                  setQtyToRestockListByProduct(list =>
+                                    list.map(item => 
+                                      item.upc === product.upc
+                                        ? { ...item, qty: value }
+                                        : item
+                                    )
+                                  )
+                                }}
+                              />
+                            </span>
+                          </td>
                           <td className="text-center">{product.htsus || "N/A"}</td>
                           <td>
                             <div className="flex flex-wrap gap-2">
