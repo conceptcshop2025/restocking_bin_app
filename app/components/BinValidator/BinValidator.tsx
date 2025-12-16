@@ -2,7 +2,7 @@ import { BinValidatorProps } from "@/app/types/type";
 import { useState, useEffect, useRef } from "react";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/16/solid";
 
-export default function BinValidator({ productUpc, productQuantity, binLocations, productItem, onValidate }: BinValidatorProps) {
+export default function BinValidator({ productUpc, productQuantity, binLocations, productItem, bAlias, onValidate }: BinValidatorProps) {
   const [validateBinInput, setValidateBinInput] = useState<string>("");
   const [validateUpcInput, setValidateUpcInput] = useState<string>("");
   const [debouncedUpcInput, setDebouncedUpcInput] = useState<string>("");
@@ -42,7 +42,13 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
   useEffect(() => {
     if (debouncedUpcInput) {
       setValidateUpcInput(debouncedUpcInput);
-      if (debouncedUpcInput === productUpc) {
+      
+      let findedProduct = false;
+      if (debouncedUpcInput === productUpc || bAlias.find(key => key === debouncedUpcInput)) {
+        findedProduct = true;
+      }
+
+      if (findedProduct) {
         setProductQuantityScanned(prev => prev + 1);
         setValidateUpcInput("");
 
@@ -76,7 +82,23 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
           className="border border-zinc-300 rounded-md px-2 py-4 h-fit"
           value={validateUpcInput}
           onChange={(e) => setValidateUpcInput(e.currentTarget.value)} />
-          <span className={`p-4 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans text-xl ${validateUpcInput === productUpc || productQuantityScanned === productQuantity && 'bg-green-600'}`}>{ productUpc }</span>
+          <span className={`p-4 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans text-xl ${validateUpcInput === productUpc || productQuantityScanned === productQuantity && 'bg-green-600'}`}>
+            { productUpc }
+            {
+              bAlias &&
+                bAlias.length > 0 && 
+                  <div className="b-alias">
+                    <span className="text-xs">B-Alias:</span>
+                    <ul>
+                      {
+                        bAlias.map(code => (
+                          <li className="text-xs" key={code}>{ code }</li>
+                        ))
+                      }
+                    </ul>
+                  </div>
+            }
+          </span>
           <span className={`p-4 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans text-xl ${productQuantityScanned === productQuantity && 'bg-green-600'}`}>{productQuantityScanned}/{ productQuantity }</span>
           {
             productQuantityScanned === productQuantity && <CheckCircleIcon className="size-8 text-green-600"/>
@@ -99,7 +121,9 @@ export default function BinValidator({ productUpc, productQuantity, binLocations
           binLocations.length > 0 ? (
             (Array.isArray(binLocations) ? binLocations : [binLocations]).map((location: string, idx: number) => {
               return (
-                <span key={idx} className={`p-4 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans text-xl ${validateBinInput == location && 'bg-green-600'}`}>{location}</span>
+                <span key={idx} className={`p-4 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans text-xl ${validateBinInput == location && 'bg-green-600'}`}>
+                  {location}
+                </span>
               )
             }
           )) :

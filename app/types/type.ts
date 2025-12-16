@@ -46,5 +46,6 @@ export type BinValidatorProps = {
   productUpc: string;
   productQuantity: number;
   productItem?: HTMLElement;
+  bAlias: string[] | [];
   onValidate?: (item:HTMLElement, successItem:boolean) => void;
 }

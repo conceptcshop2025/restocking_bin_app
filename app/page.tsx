@@ -10,7 +10,7 @@ import BinValidator from "./components/BinValidator/BinValidator";
 import { TrashIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.7.6";
+  const appVersion:string = "3.8.6";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -241,13 +241,14 @@ export default function Home() {
     }, 1000);
   }
 
-  function validateBin(productUpc:string, productQuantity:number, binLocations:string[] | string, productItem:HTMLElement, onValidate?: (item:HTMLElement) => void) {
+  function validateBin(productUpc:string, productQuantity:number, binLocations:string[] | string, productItem:HTMLElement, bAlias:string[] | [],  onValidate?: (item:HTMLElement) => void) {
     setContentModal({
       content: <BinValidator
         productUpc={productUpc}
         productQuantity={productQuantity}
         binLocations={binLocations}
         productItem={productItem}
+        bAlias={bAlias}
         onValidate={(item, successItem) => toggleCheckedProduct(item, successItem)} />,
       type: "bin-validator",
       onClose: () => setContentModal({content: null, onClose: () => {}})
@@ -388,7 +389,7 @@ export default function Home() {
                                     <ul>
                                       {
                                         product.bAlias.map(code => (
-                                          <li className="text-xs">{ code }</li>
+                                          <li className="text-xs" key={code}>{ code }</li>
                                         ))
                                       }
                                     </ul>
@@ -424,7 +425,7 @@ export default function Home() {
                           <td className="p-4">
                             <button
                               className={`py-2 px-4 bg-green-600 cursor-pointer rounded-md text-neutral-100 hover:bg-green-800 duration-300 ease-in-out mx-auto h-fit w-full mb-2 ${product.restocked && 'bg-red-600'}`}
-                              onClick={ (e) => !product.restocked ? validateBin(product.upc, product.quantityToReStock, product.binLocation, e.currentTarget) : disableCheckedItem(e.currentTarget) }>
+                              onClick={ (e) => !product.restocked ? validateBin(product.upc, product.quantityToReStock, product.binLocation, e.currentTarget, product.bAlias || []) : disableCheckedItem(e.currentTarget) }>
                               { product.restocked ? "Annuler" : "Fini" }
                             </button>
                             <button
