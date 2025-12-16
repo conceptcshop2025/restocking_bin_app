@@ -49,3 +49,8 @@ export type BinValidatorProps = {
   bAlias: string[] | [];
   onValidate?: (item:HTMLElement, successItem:boolean) => void;
 }
+
+export type QtyToRestockProps = {
+  upc: string;
+  qty: number;
+}
