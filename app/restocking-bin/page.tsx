@@ -11,7 +11,7 @@ import BinValidator from "../components/BinValidator/BinValidator";
 import { TrashIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.9.6";
+  const appVersion:string = "3.10.6";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -26,6 +26,8 @@ export default function Home() {
   const [searchUpcInput, setSearchUpcInput] = useState<string>("");
   const [debouncedSearchUpcInput, setDebouncedSearchUpcInput] = useState<string>("");
   const [qtyToRestockListByProduct, setQtyToRestockListByProduct] = useState<QtyToRestockProps[]>([]);
+  const [sku, setSku] = useState<string>("");
+  const [debouncedSku, setDebouncedSku] = useState<string>("");
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -39,7 +41,7 @@ export default function Home() {
 
   useEffect(() => {
     if (debouncedUpc) {
-      getData(debouncedUpc);
+      getData(debouncedUpc, 'upc');
     }
   }, [debouncedUpc]);
 
@@ -75,8 +77,24 @@ export default function Home() {
     setProductList(sorted);
   }, [productList.length]);
 
-  function getData(upc:string) {
-    const baseUrl = `/api/ipacky?upc=${upc}`;
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSku(sku);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [sku]);
+
+  useEffect(() => {
+    if (debouncedSku) {
+      getData(debouncedSku, 'sku');
+    }
+  }, [debouncedSku]);
+
+  function getData(code:string, type: "upc" | "sku") {
+    const baseUrl = `/api/ipacky?code=${code}&type=${type}`;
     fetch(baseUrl)
     .then(response => response.json())
     .then(data => {
@@ -108,10 +126,16 @@ export default function Home() {
         setQtyToRestockListByProduct(list => [...list, { upc: data.data[0].barcode, qty: 1 }]);
       }
       setTimeout(() => {latestAddedProduct(data.data[0].barcode)}, 200);
-      setUpc("");
+      if (type === 'upc') {
+        setUpc("");
+      } else {
+        setSku("");
+      }
     })
-    .catch((error) => {
-      console.error('Error:', error);
+    .catch(() => {
+      initToast({type: "error", message: "Il n'est pas possible de trouver le produit à ajouter à la liste. Assurez-vous que le code que vous entrez appartient bien au champ UPC ou SKU, selon le cas." });
+      setUpc("");
+      setSku("");
     });
   }
 
@@ -211,6 +235,13 @@ export default function Home() {
     setIsLoading(true);
     setListFromHistory(selectedItem);
     setProductList(selectedItem.products);
+    /*  */
+    const arrayQtyToRestock: QtyToRestockProps[] = selectedItem.products.map(product => ({
+      upc: product.upc,
+      qty: product.quantityToReStock,
+    }));
+    setQtyToRestockListByProduct(arrayQtyToRestock);
+    /*  */
     setIsLoading(false);
     setShowHistoryListModal(false);
   }
@@ -304,9 +335,15 @@ export default function Home() {
         </section>
         <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full sticky top-0 items-start">
           <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
-          <div className="flex justify-between items-center gap-2">
-            <label htmlFor="upc">Ajoute produit: </label>
-            <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
+          <div className="flex flex-col justify-between items-center gap-2">
+            <div className="flex justify-between items-center gap-2">
+              <label htmlFor="upc">Ajoute produit par UPC: </label>
+              <input type="text" id="upc" placeholder="UPC" name="upc" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={upc} onChange={(e) => setUpc(e.target.value)} />
+            </div>
+            <div className="flex justify-between items-center gap-2">
+              <label htmlFor="sku">Ajoute produit par SKU: </label>
+              <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={sku} onChange={(e) => setSku(e.target.value)} />
+            </div>
           </div>
           <div className="flex justify-between items-center gap-2">
             <label htmlFor="upc">Chercher un produit: </label>
@@ -338,7 +375,7 @@ export default function Home() {
                 )
               }
               <table className="table-fixed w-full">
-                <thead className="sticky top-[88px] bg-neutral-200">
+                <thead className="sticky top-[108px] bg-neutral-200">
                   {
                     productList.length > 0 && (
                       <tr>
@@ -416,13 +453,23 @@ export default function Home() {
                                 onChange={(e) => {
                                   const value = Number(e.currentTarget.value);
 
+                                  // 1. Actualiza el estado visual (lo que ya tenías)
                                   setQtyToRestockListByProduct(list =>
                                     list.map(item => 
                                       item.upc === product.upc
                                         ? { ...item, qty: value }
                                         : item
                                     )
-                                  )
+                                  );
+
+                                  // 2. NUEVO: Actualiza también la lista principal de productos (productList)
+                                  setProductList(currentList => 
+                                    currentList.map(p => 
+                                      p.upc === product.upc 
+                                        ? { ...p, quantityToReStock: value } // Actualizamos la propiedad dentro del objeto
+                                        : p
+                                    )
+                                  );
                                 }}
                               />
                             </span>

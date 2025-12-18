@@ -4,11 +4,12 @@ export async function GET(req: Request) {
   try {
 
     const { searchParams } = new URL(req.url);
-    const upc = searchParams.get("upc") || "";
+    const code = searchParams.get("code") || "";
+    const type = searchParams.get("type") || "";
 
-    if(!upc) {
+    if(!code || !type) {
       return NextResponse.json(
-        { error: "Missing UPC parameter" },
+        { error: "Missing code or type parameter" },
         { status: 400 }
       );
     }
@@ -25,7 +26,8 @@ export async function GET(req: Request) {
 
     const token = Buffer.from(`${user}:${password}`).toString("base64");
 
-    const response = await fetch(`${process.env.BASE_URL}?barcode=${upc}&type=upc`, {
+    const baseUrl = process.env.BASE_URL;
+    const response = await fetch(`${baseUrl}/${type === 'upc' ? 'getProductInfoByBarcode': 'getProductInfoBySKU'}?${type === 'upc' ? 'barcode': 'sku'}=${code}&type=${type}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
