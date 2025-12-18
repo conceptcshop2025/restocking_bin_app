@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Product, ToastProps, HistoryListProps, QtyToRestockProps } from "../types/type";
+import { Product, ToastProps, HistoryListProps } from "../types/type";
 import Modal from "../components/Modal/Modal";
 import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
@@ -11,7 +11,7 @@ import BinValidator from "../components/BinValidator/BinValidator";
 import { TrashIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 
 export default function Home() {
-  const appVersion:string = "3.10.6";
+  const appVersion:string = "4.0.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -25,7 +25,6 @@ export default function Home() {
   const [latestSavedUpc, setLatestSavedUpc] = useState<string>("");
   const [searchUpcInput, setSearchUpcInput] = useState<string>("");
   const [debouncedSearchUpcInput, setDebouncedSearchUpcInput] = useState<string>("");
-  const [qtyToRestockListByProduct, setQtyToRestockListByProduct] = useState<QtyToRestockProps[]>([]);
   const [sku, setSku] = useState<string>("");
   const [debouncedSku, setDebouncedSku] = useState<string>("");
 
@@ -98,16 +97,21 @@ export default function Home() {
     fetch(baseUrl)
     .then(response => response.json())
     .then(data => {
-      const findedProductInProductList = productList.find(key => key.upc === data.data[0].barcode);
-      if (findedProductInProductList) {
-        findedProductInProductList.quantityToReStock += 1;
-        setQtyToRestockListByProduct(list =>
-          list.map(item => 
-            item.upc === data.data[0].barcode
-              ? { ...item, qty: item.qty + 1 }
-              : item
+      const productExists = productList.some(
+        product => product.upc === data.data[0].barcode
+      );
+
+      if (productExists) {
+        setProductList(prevList =>
+          prevList.map(product =>
+            product.upc === data.data[0].barcode
+              ? {
+                  ...product,
+                  quantityToReStock: product.quantityToReStock + 1,
+                }
+              : product
           )
-        )
+        );
       } else {
         const newProduct: Product = {
           sku: data.data[0].sku || "N/A",
@@ -115,18 +119,22 @@ export default function Home() {
           name: data.data[0].name || "N/A",
           quantityAvailable: data.data[0].quantityAvailable || 0,
           quantityOnHand: data.data[0].quantityOnHand || 0,
-          quantityToReStock: qtyToRestockListByProduct.find(key => key.upc === data.data[0].barcode)?.qty || 1,
+          quantityToReStock: 1,
           binLocation: data.data[0].binLocations || [],
           htsus: data.data[0].htsUS || null,
           imageUrl: data.data[0].imageURL || "",
           restocked: false,
           bAlias: data.data[0].barcodeAliases || [],
-        }
+        };
+
         setProductList(prevList => [...prevList, newProduct]);
-        setQtyToRestockListByProduct(list => [...list, { upc: data.data[0].barcode, qty: 1 }]);
       }
-      setTimeout(() => {latestAddedProduct(data.data[0].barcode)}, 200);
-      if (type === 'upc') {
+
+      setTimeout(() => {
+        latestAddedProduct(data.data[0].barcode);
+      }, 200);
+
+      if (type === "upc") {
         setUpc("");
       } else {
         setSku("");
@@ -234,14 +242,12 @@ export default function Home() {
   async function setProductListFromHistoryList(selectedItem:HistoryListProps) {
     setIsLoading(true);
     setListFromHistory(selectedItem);
-    setProductList(selectedItem.products);
-    /*  */
-    const arrayQtyToRestock: QtyToRestockProps[] = selectedItem.products.map(product => ({
-      upc: product.upc,
-      qty: product.quantityToReStock,
-    }));
-    setQtyToRestockListByProduct(arrayQtyToRestock);
-    /*  */
+    setProductList(
+      selectedItem.products.map(product => ({
+        ...product,
+        quantityToReStock: product.quantityToReStock ?? 1,
+      }))
+    );
     setIsLoading(false);
     setShowHistoryListModal(false);
   }
@@ -449,24 +455,14 @@ export default function Home() {
                                 id={`qty-to-re-stock-for-product--${product.upc}`}
                                 className="w-full text-center"
                                 min={1}
-                                value={qtyToRestockListByProduct.find(key => key.upc === product.upc)?.qty ?? 1}
+                                value={product.quantityToReStock}
                                 onChange={(e) => {
-                                  const value = Number(e.currentTarget.value);
+                                  const value = Math.max(1, Number(e.target.value) || 1);
 
-                                  // 1. Actualiza el estado visual (lo que ya tenías)
-                                  setQtyToRestockListByProduct(list =>
-                                    list.map(item => 
-                                      item.upc === product.upc
-                                        ? { ...item, qty: value }
-                                        : item
-                                    )
-                                  );
-
-                                  // 2. NUEVO: Actualiza también la lista principal de productos (productList)
-                                  setProductList(currentList => 
-                                    currentList.map(p => 
-                                      p.upc === product.upc 
-                                        ? { ...p, quantityToReStock: value } // Actualizamos la propiedad dentro del objeto
+                                  setProductList(list =>
+                                    list.map(p =>
+                                      p.upc === product.upc
+                                        ? { ...p, quantityToReStock: value }
                                         : p
                                     )
                                   );
