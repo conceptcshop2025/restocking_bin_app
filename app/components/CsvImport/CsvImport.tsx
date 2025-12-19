@@ -21,7 +21,6 @@ export default function CsvImport({ onLoading, onProductListFromFile }: CsvImpor
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        console.log("Datos CSV crudos:", results.data);
         await processRows(results.data as CsvRowsProps[]);
         onLoading(false);
       },
@@ -66,7 +65,7 @@ export default function CsvImport({ onLoading, onProductListFromFile }: CsvImpor
               accumulatedLogs.push(`Success: SKU: ${sku}`);
 
             } else {
-              accumulatedLogs.push(`Error: SKU: ${sku} no encontrado o error de API`);
+              accumulatedLogs.push(`Error: SKU: ${sku} not finded or API's error`);
             }
           } catch (error) {
             console.error(error);
@@ -76,8 +75,6 @@ export default function CsvImport({ onLoading, onProductListFromFile }: CsvImpor
       });
 
       await Promise.all(promises);
-
-      console.log('Todos los productos procesados:', accumulatedProducts);
 
       setProductListFromFile(accumulatedProducts);
       setLogs(accumulatedLogs);
