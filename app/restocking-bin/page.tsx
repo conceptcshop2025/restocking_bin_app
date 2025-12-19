@@ -9,9 +9,10 @@ import Toast from "../components/Toast/Toast";
 import HistoryList from "../components/HistoryList/HistoryList";
 import BinValidator from "../components/BinValidator/BinValidator";
 import { TrashIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
+import CsvImport from "../components/CsvImport/CsvImport";
 
 export default function Home() {
-  const appVersion:string = "4.0.0";
+  const appVersion:string = "5.0.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -340,7 +341,6 @@ export default function Home() {
           <p className="mb-4"><small>V.{appVersion}</small></p>
         </section>
         <div className="form-list flex justify-between gap-4 p-2 bg-gray-100 w-full sticky top-0 items-start">
-          <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 hidden" />
           <div className="flex flex-col justify-between items-center gap-2">
             <div className="flex justify-between items-center gap-2">
               <label htmlFor="upc">Ajoute produit par UPC: </label>
@@ -349,6 +349,9 @@ export default function Home() {
             <div className="flex justify-between items-center gap-2">
               <label htmlFor="sku">Ajoute produit par SKU: </label>
               <input type="text" id="sku" placeholder="SKU" name="sku" className="border border-zinc-300 rounded-md px-2 py-2 h-fit" value={sku} onChange={(e) => setSku(e.target.value)} />
+            </div>
+            <div className="flex justify-start w-full">
+              <CsvImport onLoading={(value) => setIsLoading(value)} onProductListFromFile={(list) => setProductList(list)} />
             </div>
           </div>
           <div className="flex justify-between items-center gap-2">
@@ -373,26 +376,26 @@ export default function Home() {
         </div>
         {
           isLoading ?
-            <Loader /> :
-            <section className="py-2">
+            <Loader classes="py-4" /> :
+            <section>
               {
                 listFromHistory && (
                   <p className="py-4 px-2 text-2xl">{ listFromHistory.name }</p>
                 )
               }
               <table className="table-fixed w-full">
-                <thead className="sticky top-[108px] bg-neutral-200">
+                <thead className="sticky top-[110px] bg-neutral-200">
                   {
                     productList.length > 0 && (
                       <tr>
-                        <th className="py-4">Info du produit</th>
-                        <th className="text-center py-4">UPC</th>
-                        <th className="text-center py-4">Qty Disponible</th>
-                        <th className="text-center py-4">Qty reservé</th>
-                        <th className="text-center py-4">QTY à approv...</th>
-                        <th className="text-center py-4">HTSUS</th>
-                        <th className="text-center py-4">Bin</th>
-                        <th className="text-center py-4">Statut</th>
+                        <th className="py-6">Info du produit</th>
+                        <th className="text-center py-6">UPC</th>
+                        <th className="text-center py-6">Qty Disponible</th>
+                        <th className="text-center py-6">Qty reservé</th>
+                        <th className="text-center py-6">QTY à approv...</th>
+                        <th className="text-center py-6">HTSUS</th>
+                        <th className="text-center py-6">Bin</th>
+                        <th className="text-center py-6">Statut</th>
                       </tr>
                     )
                   }
