@@ -12,12 +12,15 @@
     "@heroicons/react": "^2.2.0",
     "@neondatabase/serverless": "^1.0.2",
     "next": "^16.0.7",
+    "p-limit": "^7.2.0",
+    "papaparse": "^5.5.3",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

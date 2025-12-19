@@ -49,3 +49,14 @@ export type BinValidatorProps = {
   bAlias: string[] | [];
   onValidate?: (item:HTMLElement, successItem:boolean) => void;
 }
+
+export type CsvImportProps = {
+  onLoading: (value:boolean) => void;
+  onProductListFromFile: (list:Product[]) => void;
+}
+
+export type CsvRowsProps = {
+  ['Purchase Order']: string;
+  ['Qty Ordered']: string;
+  SKU: string;
+}
