@@ -57,7 +57,7 @@ export default function TrackingBinPage() {
         <h1 className="text-4xl font-bold">Suivi de stock des bins</h1>
         <p className="mb-4"><small>V.{appVersion}</small></p>
       </section>
-      <div className="container flex justify-center w-full mx-auto">
+      <div className="container flex justify-center w-full mx-auto mb-4">
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Get Data !
         </button>
@@ -70,9 +70,10 @@ export default function TrackingBinPage() {
             <thead className="sticky top-0 bg-neutral-200">
               <tr>
                 <th className="py-6">Info du produit</th>
-                <th className="text-center py-6">Produits par Bin</th>
-                <th className="text-center py-6">Produits vendus</th>
-                <th className="text-center py-6">Produits restantes dans la bin</th>
+                <th className="text-center py-6">Qty par Bin</th>
+                <th className="text-center py-6">Qty vendus</th>
+                <th className="text-center py-6">Qty dans bin</th>
+                <th className="text-center py-6">Bin</th>
                 <th className="text-center py-6">Statut</th>
               </tr>
             </thead>
@@ -97,7 +98,10 @@ export default function TrackingBinPage() {
                       <span>--</span>
                     </td>
                     <td className="text-center">
-                      <span>status</span>
+                      <span>-</span>
+                    </td>
+                    <td className="text-center">
+                      <span>statut</span>
                     </td>
                   </tr>
                 ))
