@@ -60,3 +60,14 @@ export type CsvRowsProps = {
   ['Qty Ordered']: string;
   SKU: string;
 }
+
+export type ProductSold = {
+  name: string;
+  type: string;
+  sku: string;
+  soldQuantity: string;
+  upc: string;
+  binLocation: string[] | string;
+  htsus: string | null;
+  imageUrl: string;
+}

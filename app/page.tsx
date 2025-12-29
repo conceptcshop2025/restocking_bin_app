@@ -23,12 +23,12 @@ export default function Home() {
               <span className="text-neutral-50">Réapprovisionnement de bin</span>
             </Link>
             
-            <button
-              disabled
+            <Link
+              href="/tracking-bin"
               className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer disabled:bg-gray-300 disabled:pointer-events-none">
               <ExclamationTriangleIcon className="size-6 text-neutral-50" />
               <span className="text-neutral-50">Suivi de stock de bin (prochainement) </span>
-            </button>
+            </Link>
           </div>
         </div>
       </main>
