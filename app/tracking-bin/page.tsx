@@ -82,10 +82,20 @@ export default function TrackingBinPage() {
                 productSoldList.map((product:ProductSold, index:number) => (
                   <tr key={index} className={`font-bold border-b-2 border-zinc-300 item--${index}`}>
                     <td className="p-4 text-sm font-semibold">
-                      <span>{ product.name }</span>
-                      <span>
+                      {
+                        product.imageUrl.length > 0 &&
+                        <Image
+                          src={product.imageUrl}
+                          alt={product.name}
+                          width={100}
+                          height={60} />
+                      }
+                      <span className="block">{ product.name }</span>
+                      <span className="block border-t border-zinc-300 mt-2 pt-2">
                         SKU: { product.sku }
-                        { product.upc ? ` | UPC: ${ product.upc }` : "" }
+                      </span>
+                      <span className="block">
+                        UPC: { product.upc }
                       </span>
                     </td>
                     <td className="text-center">
