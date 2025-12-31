@@ -5,6 +5,7 @@ import Image from "next/image";
 import { ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 import { useState, useEffect } from "react";
 import type { ProductSold } from "../types/type";
+import BinStatus from "../components/BinStatus/BinStatus";
 
 export default function TrackingBinPage() {
   const appVersion = "1.0.0";
@@ -67,7 +68,7 @@ export default function TrackingBinPage() {
         productSoldList.length > 0 && 
         <div className="product-list">
           <table className="table-fixed w-full">
-            <thead className="sticky top-0 bg-neutral-200">
+            <thead className="sticky top-0 bg-neutral-200 z-40">
               <tr>
                 <th className="py-6">Info du produit</th>
                 <th className="text-center py-6">Qty par Bin</th>
@@ -111,7 +112,9 @@ export default function TrackingBinPage() {
                       <span>-</span>
                     </td>
                     <td className="text-center">
-                      <span>statut</span>
+                      <BinStatus
+                        qty={Number(product.soldQuantity)}
+                        maxQty={100} />
                     </td>
                   </tr>
                 ))
