@@ -4,23 +4,29 @@ import './bin-status.css';
 export default function BinStatus({ qty, maxQty }: BinStatusProps) {
   let statusLabel =  'inconnu';
   let status = 'unknown';
-  const percentage = (qty / maxQty) * 100;
+  const percentage = Math.round((maxQty - qty) / maxQty * 100);
+  console.log(`BinStatus - qty: ${qty}, maxQty: ${maxQty}, percentage: ${percentage}%`);
 
-  if (percentage <= 0) {
-    statusLabel = 'Rupture de stock';
-    status = 'out-of-stock';
-  } else if (percentage <= 25) {
-    statusLabel = 'Stock faible';
-    status = 'low-stock';
-  } else if (percentage <= 50) {
-    statusLabel = 'Stock moyen';
-    status = 'medium-stock';
-  } else if (percentage <= 100) {
-    statusLabel = 'Stock élevé';
-    status = 'high-stock';
-  } else {
+  if(maxQty === 0) {
     statusLabel = 'inconnu';
     status = 'unknown';
+  } else {
+    if (percentage <= 0) {
+      statusLabel = 'Rupture de stock';
+      status = 'out-of-stock';
+    } else if (percentage <= 25) {
+      statusLabel = 'Stock faible';
+      status = 'low-stock';
+    } else if (percentage <= 50) {
+      statusLabel = 'Stock moyen';
+      status = 'medium-stock';
+    } else if (percentage <= 100) {
+      statusLabel = 'Stock élevé';
+      status = 'high-stock';
+    } else {
+      statusLabel = 'inconnu';
+      status = 'unknown';
+    }
   }
   
   return (
