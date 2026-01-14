@@ -5,7 +5,6 @@ export default function BinStatus({ qty, maxQty }: BinStatusProps) {
   let statusLabel =  'inconnu';
   let status = 'unknown';
   const percentage = Math.round((maxQty - qty) / maxQty * 100);
-  console.log(`BinStatus - qty: ${qty}, maxQty: ${maxQty}, percentage: ${percentage}%`);
 
   if(maxQty === 0) {
     statusLabel = 'inconnu';
