@@ -65,11 +65,12 @@ export type ProductSold = {
   name: string;
   type: string;
   sku: string;
-  soldQuantity: string;
+  soldQuantity?: string;
   upc: string;
   binLocation: string[] | string;
   htsus: string | null;
   imageUrl: string;
+  remainingQuantity?:number;
 }
 
 export type BinStatusProps = {

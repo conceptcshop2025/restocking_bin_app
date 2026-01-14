@@ -4,15 +4,25 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
-import type { ProductSold } from "../types/type";
+import type { ProductSold, ToastProps } from "../types/type";
 import BinStatus from "../components/BinStatus/BinStatus";
 import pLimit from "p-limit";
 import { Loader } from "../components/Loader/Loader";
+import Toast from "../components/Toast/Toast";
 
 export default function TrackingBinPage() {
   const appVersion = "1.2.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
+  const [warehouseProducts, setWarehouseProducts] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [showToast, setShowToast] = useState<ToastProps | null>(null);
+
+  function initToast(content:ToastProps | null) {
+    setShowToast(content);
+    if (content) {
+      setTimeout(() => { setShowToast(null); }, 6000);
+    }
+  }
 
   async function getData() {
     setIsLoading(true);
@@ -47,50 +57,89 @@ export default function TrackingBinPage() {
   async function completeData(itemsToProcess: ProductSold[]) {
     const limit = pLimit(5);
 
-    const promises = itemsToProcess.map((row: ProductSold) => {
-      return limit(async () => {
-        const sku = row.sku;
+    const updatedItems = await Promise.all(
+      itemsToProcess.map(row =>
+        limit(async () => {
+          const sku = row.sku;
+          if (!sku) return row;
 
-        if (!sku) return;
+          try {
+            const response = await fetch(`/api/ipacky?code=${sku}&type=sku`);
+            const result = await response.json();
 
-        try {
-          const baseUrl = `/api/ipacky?code=${sku}&type=sku`;
-          const response = await fetch(baseUrl);
-          const result = await response.json();
+            if (response.ok && result?.data?.length > 0) {
+              const productData = result.data[0];
 
-          if (response.ok && result.data && result.data.length > 0) {
-            const productData = result.data[0];
-
-            setProductSoldList(prevList =>
-              prevList.map(product =>
-                product.sku === row.sku
-                  ? {
-                      ...product,
-                      upc: productData.barcode || '',
-                      binLocation: productData.binLocations || [],
-                      htsus: productData.htsUS || null,
-                      imageUrl: productData.imageURL || ''
-                    }
-                  : product
-              )
-            );
-
-          } else {
-            console.error(`Error: SKU: ${sku} not finded or API's error`);
+              return {
+                ...row,
+                upc: productData.barcode || '',
+                binLocation: productData.binLocations || [],
+                htsus: productData.htsUS || null,
+                imageUrl: productData.imageURL || ''
+              };
+            }
+          } catch (error) {
+            console.error(`Error SKU ${sku}`, error);
           }
-        } catch (error) {
-          console.error(error);
-          console.error(`Critical Error: SKU: ${sku}`);
-        }
-      });
-    });
 
-    await Promise.all(promises);
+          return row;
+        })
+      )
+    );
+
+    setProductSoldList(updatedItems);
+
+    await syncData(updatedItems);
+
     setIsLoading(false);
+    initToast({
+      type: 'info',
+      message: 'Synchronisation des produits en cours...'
+    });
+  }
+
+  async function syncData(updatedItems: ProductSold[]) {
+    const baseUrl = `/api/conceptc/warehouse`;
+    try {
+      const response = await fetch(baseUrl);
+      if (!response.ok) {
+        throw new Error(`Error fetching data: ${response.statusText}`);
+      }
+      const data = await response.json();
+      if (data.data.length === 0) {
+        const productListForBinSync = updatedItems.map((item) => ({
+          ...item,
+          remainingQuantity: item.htsus ? Number(item.htsus) - Number(item.soldQuantity || '0') : null
+        }));
+        console.log('productList to syncData: ', productListForBinSync);
+        try {
+          const res = await fetch(baseUrl,{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(productListForBinSync)
+          });
+          if (res.ok) {
+            initToast({
+              type: 'success',
+              message: "Les produits ont été synchronisés avec succès dans l'entrepot."
+            });
+          }
+        } catch(error) {
+          console.error("Error during fetch:", error);
+        }
+      } else {
+        // Voy aca, se continua con validaciones de la lista de productos de shopify vs productos de neon para actualizar el stock restante en la bin
+      }
+    } catch (error) {
+      console.error("Error during fetch:", error);
+    }
   }
 
   return (
     <main>
+      { showToast && <Toast type={showToast.type} message={showToast.message} />}
       <header className="flex justify-center p-2">
         <Link
           href="/"
