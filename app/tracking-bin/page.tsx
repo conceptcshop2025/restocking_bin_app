@@ -7,12 +7,15 @@ import { useState } from "react";
 import type { ProductSold } from "../types/type";
 import BinStatus from "../components/BinStatus/BinStatus";
 import pLimit from "p-limit";
+import { Loader } from "../components/Loader/Loader";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.1.0";
+  const appVersion = "1.2.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   async function getData() {
+    setIsLoading(true);
     const baseUrl = `/api/shopify/reports`;
     try {
       const response = await fetch(baseUrl);
@@ -83,6 +86,7 @@ export default function TrackingBinPage() {
     });
 
     await Promise.all(promises);
+    setIsLoading(false);
   }
 
   return (
@@ -114,76 +118,78 @@ export default function TrackingBinPage() {
       </div>
 
       {
-        productSoldList.length > 0 && 
-        <div className="product-list">
-          <table className="table-fixed w-full">
-            <thead className="sticky top-0 bg-neutral-200 z-40">
-              <tr>
-                <th className="py-6">Info du produit</th>
-                <th className="text-center py-6">Qty par Bin</th>
-                <th className="text-center py-6">Qty vendus</th>
-                <th className="text-center py-6">Qty dans bin</th>
-                <th className="text-center py-6">Bin</th>
-                <th className="text-center py-6">Statut</th>
-              </tr>
-            </thead>
-            <tbody>
-              {
-                productSoldList.map((product:ProductSold, index:number) => (
-                  <tr key={index} className={`font-bold border-b-2 border-zinc-300 item--${index}`}>
-                    <td className="p-4 text-sm font-semibold">
-                      {
-                        product.imageUrl.length > 0 &&
-                        <Image
-                          src={product.imageUrl}
-                          alt={product.name}
-                          width={100}
-                          height={60} />
-                      }
-                      <span className="block">{ product.name }</span>
-                      <span className="block border-t border-zinc-300 mt-2 pt-2">
-                        SKU: { product.sku }
-                      </span>
-                      <span className="block">
-                        UPC: { product.upc }
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
-                    </td>
-                    <td className="text-center">
-                      <span>{ product.soldQuantity }</span>
-                    </td>
-                    <td className="text-center">
-                      <span className={`${!product.htsus && 'text-red-500'}`}>
-                        {
-                          product.htsus && product.soldQuantity ? `${ Number(product.htsus) - Number(product.soldQuantity) } (${ Math.round((Number(product.htsus) - Number(product.soldQuantity)) / Number(product.htsus) * 100) }%)` : "inconnu"
-                        }
-                      </span>
-                    </td>
-                    <td className="text-center">
-                      <div className="flex flex-col gap-2 py-2">
-                        {
-                          Array.isArray(product.binLocation) ?
-                          product.binLocation.map((bin, idx) => (
-                            <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{ bin }</span>
-                          ))
-                          :
-                          <span>{ product.binLocation }</span>
-                        }
-                      </div>
-                    </td>
-                    <td className="text-center">
-                      <BinStatus
-                        qty={Number(product.soldQuantity)}
-                        maxQty={Number(product.htsus)} />
-                    </td>
-                  </tr>
-                ))
-              }
-            </tbody>
-          </table>
-        </div>
+        isLoading
+          ? <Loader classes="py-4" />
+          : productSoldList.length > 0 && 
+              <div className="product-list">
+                <table className="table-fixed w-full">
+                  <thead className="sticky top-0 bg-neutral-200 z-40">
+                    <tr>
+                      <th className="py-6 px-4 text-left">Info du produit</th>
+                      <th className="text-center py-6">Qty par Bin HTSUS</th>
+                      <th className="text-center py-6">Qty vendus</th>
+                      <th className="text-center py-6">Qty restant dans la bin</th>
+                      <th className="text-center py-6">Bin</th>
+                      <th className="text-center py-6">Statut</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {
+                      productSoldList.map((product:ProductSold, index:number) => (
+                        <tr key={index} className={`font-bold border-b-2 border-zinc-300 item--${index}`}>
+                          <td className="p-4 text-sm font-semibold">
+                            {
+                              product.imageUrl.length > 0 &&
+                              <Image
+                                src={product.imageUrl}
+                                alt={product.name}
+                                width={100}
+                                height={60} />
+                            }
+                            <span className="block">{ product.name }</span>
+                            <span className="block border-t border-zinc-300 mt-2 pt-2">
+                              SKU: { product.sku }
+                            </span>
+                            <span className="block">
+                              UPC: { product.upc }
+                            </span>
+                          </td>
+                          <td className="text-center">
+                            <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
+                          </td>
+                          <td className="text-center">
+                            <span>{ product.soldQuantity }</span>
+                          </td>
+                          <td className="text-center">
+                            <span className={`${!product.htsus && 'text-red-500'}`}>
+                              {
+                                product.htsus && product.soldQuantity ? `${ Number(product.htsus) - Number(product.soldQuantity) } (${ Math.round((Number(product.htsus) - Number(product.soldQuantity)) / Number(product.htsus) * 100) }%)` : "inconnu"
+                              }
+                            </span>
+                          </td>
+                          <td className="text-center">
+                            <div className="flex flex-col gap-2 py-2">
+                              {
+                                Array.isArray(product.binLocation) ?
+                                product.binLocation.map((bin, idx) => (
+                                  <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{ bin }</span>
+                                ))
+                                :
+                                <span>{ product.binLocation }</span>
+                              }
+                            </div>
+                          </td>
+                          <td className="text-center">
+                            <BinStatus
+                              qty={Number(product.soldQuantity)}
+                              maxQty={Number(product.htsus)} />
+                          </td>
+                        </tr>
+                      ))
+                    }
+                  </tbody>
+                </table>
+              </div>
       }
     </main>
   )
