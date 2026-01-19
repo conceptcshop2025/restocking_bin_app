@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
+import { ArrowUturnLeftIcon, ArchiveBoxArrowDownIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
 import type { ProductSold, ToastProps } from "../types/type";
 import BinStatus from "../components/BinStatus/BinStatus";
@@ -11,7 +11,7 @@ import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.2.0";
+  const appVersion = "1.3.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [warehouseProducts, setWarehouseProducts] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -42,7 +42,9 @@ export default function TrackingBinPage() {
         upc: '',
         binLocation: '',
         htsus: '',
-        imageUrl: ''
+        imageUrl: '',
+        totalQuantity: 0,
+        remainingQuantity: 0
       }));
 
       setProductSoldList(formattedList);
@@ -75,7 +77,8 @@ export default function TrackingBinPage() {
                 upc: productData.barcode || '',
                 binLocation: productData.binLocations || [],
                 htsus: productData.htsUS || null,
-                imageUrl: productData.imageURL || ''
+                imageUrl: productData.imageURL || '',
+                totalQuantity: productData.quantityOnHand || 0
               };
             }
           } catch (error) {
@@ -109,7 +112,8 @@ export default function TrackingBinPage() {
       if (data.data.length === 0) {
         const productListForBinSync = updatedItems.map((item) => ({
           ...item,
-          remainingQuantity: item.htsus ? Number(item.htsus) - Number(item.soldQuantity || '0') : null
+          remainingQuantity: item.htsus ? Number(item.htsus) - Number(item.soldQuantity || '0') : null,
+          totalQuantity: item.totalQuantity || 0
         }));
         console.log('productList to syncData: ', productListForBinSync);
         try {
@@ -175,7 +179,8 @@ export default function TrackingBinPage() {
                   <thead className="sticky top-0 bg-neutral-200 z-40">
                     <tr>
                       <th className="py-6 px-4 text-left">Info du produit</th>
-                      <th className="text-center py-6">Qty par Bin HTSUS</th>
+                      <th className="text-center py-6">Qty Total</th>
+                      <th className="text-center py-6">Qty Max par Bin HTSUS</th>
                       <th className="text-center py-6">Qty vendus</th>
                       <th className="text-center py-6">Qty restant dans la bin</th>
                       <th className="text-center py-6">Bin</th>
@@ -204,6 +209,9 @@ export default function TrackingBinPage() {
                             </span>
                           </td>
                           <td className="text-center">
+                            <span>{ product.totalQuantity }</span>
+                          </td>
+                          <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
                           </td>
                           <td className="text-center">
@@ -229,9 +237,15 @@ export default function TrackingBinPage() {
                             </div>
                           </td>
                           <td className="text-center">
-                            <BinStatus
-                              qty={Number(product.soldQuantity)}
-                              maxQty={Number(product.htsus)} />
+                            <div className="flex flex-col items-center justify-center py-2 gap-4">
+                              <BinStatus
+                                qty={Number(product.soldQuantity)}
+                                maxQty={Number(product.htsus)} />
+                              <button className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm">
+                                Bin remplie
+                                <ArchiveBoxArrowDownIcon className="ml-2 inline h-4 w-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))

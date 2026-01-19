@@ -71,6 +71,7 @@ export type ProductSold = {
   htsus: string | null;
   imageUrl: string;
   remainingQuantity?:number;
+  totalQuantity?:number;
 }
 
 export type BinStatusProps = {
