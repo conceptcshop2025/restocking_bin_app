@@ -43,7 +43,8 @@ export async function POST(req: Request) {
         bin_location,
         htsus,
         image_url,
-        remaining_quantity
+        remaining_quantity,
+        total_quantity
       )
       SELECT *
       FROM UNNEST(
@@ -54,7 +55,8 @@ export async function POST(req: Request) {
         ${products.map(p => JSON.stringify(Array.isArray(p.binLocation) ? p.binLocation : []))}::text[],
         ${products.map(p => p.htsus ?? null)}::text[],
         ${products.map(p => p.imageUrl ?? null)}::text[],
-        ${products.map(p => p.remainingQuantity ?? 0)}::int[]
+        ${products.map(p => p.remainingQuantity ?? 0)}::int[],
+        ${products.map(p => p.totalQuantity ?? 0)}::int[]
       )
       RETURNING id;
     `;

@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
+import { ArrowUturnLeftIcon, ArchiveBoxArrowDownIcon } from "@heroicons/react/16/solid";
 import { useState } from "react";
 import type { ProductSold, ToastProps } from "../types/type";
 import BinStatus from "../components/BinStatus/BinStatus";
 import pLimit from "p-limit";
 import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
+import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.2.0";
+  const appVersion = "1.4.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [warehouseProducts, setWarehouseProducts] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -24,117 +25,111 @@ export default function TrackingBinPage() {
     }
   }
 
+  // get from NeonDB
   async function getData() {
     setIsLoading(true);
-    const baseUrl = `/api/shopify/reports`;
+
     try {
+      const baseUrl = `/api/conceptc/warehouse`;
       const response = await fetch(baseUrl);
+
       if (!response.ok) {
         throw new Error(`Error fetching data: ${response.statusText}`);
       }
+
       const data = await response.json();
 
-      const formattedList: ProductSold[] = data.data.rows.map((row: any) => ({
-        name: row.product_title,
-        type: row.product_type,
-        sku: row.product_variant_sku,
-        soldQuantity: row.net_items_sold,
-        upc: '',
-        binLocation: '',
-        htsus: '',
-        imageUrl: ''
-      }));
-
-      setProductSoldList(formattedList);
-
-      await completeData(formattedList); 
-      
-    } catch (error) {
-      console.error("Error during fetch:", error);
+      if (data.data.length === 0) {
+        await getDataFromShopifyReports();
+      } else {
+        const productList = data.data;
+        getDataFromShopifyReports(productList)
+      }
+    } catch(error) {
+      initToast({ type: "error", message: `Erreur lors de la récupération des données: ${String(error)}` });
     }
   }
 
-  async function completeData(itemsToProcess: ProductSold[]) {
+  // get from Shopify Reports API
+  async function getDataFromShopifyReports(productList?: ProductSold[]){
+    try {
+      const baseUrl = `/api/shopify/reports`;
+      const response = await fetch(baseUrl);
+
+      if (!response.ok) {
+        throw new Error(`Error fetching data: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+
+      const shopifyProductList = data.data.rows;
+
+      shopifyProductList.map((item:any) => {
+        if(productList) {
+          const matchedProduct = productList?.find(product => product.sku === item.product_variant_sku);
+          if( matchedProduct ) {
+            matchedProduct.remaining_quantity = Number(matchedProduct.remaining_quantity) - Number(item.net_items_sold);
+            matchedProduct.sold_quantity = item.net_items_sold;
+          } else {
+            productList.push({
+              title: item.product_title,
+              product_type: item.product_type,
+              sku: item.product_variant_sku,
+              sold_quantity: item.net_items_sold,
+              upc: '',
+              bin_location: [],
+              htsus: null,
+              image_url: '',
+              remaining_quantity: 0,
+              total_quantity: 0,
+            });
+          }
+        }
+      });
+
+      await completeProductListData(productList);
+    } catch(error) {
+      initToast({ type: "error", message: `Erreur lors de la récupération des données de Shopify: ${String(error)}` });
+    }
+  }
+
+  // complete data from iPacky
+  async function completeProductListData(productList: ProductSold[] = []) {
     const limit = pLimit(5);
 
-    const updatedItems = await Promise.all(
-      itemsToProcess.map(row =>
+    const syncProducts = await Promise.all(
+      productList.map((product) => 
         limit(async () => {
-          const sku = row.sku;
-          if (!sku) return row;
+          const sku = product.sku;
+
+          if (!sku) return product;
 
           try {
             const response = await fetch(`/api/ipacky?code=${sku}&type=sku`);
             const result = await response.json();
 
-            if (response.ok && result?.data?.length > 0) {
-              const productData = result.data[0];
-
+            if (response.ok && result.data[0]) {
               return {
-                ...row,
-                upc: productData.barcode || '',
-                binLocation: productData.binLocations || [],
-                htsus: productData.htsUS || null,
-                imageUrl: productData.imageURL || ''
-              };
+                ...product,
+                upc: result.data[0].barcode || '',
+                bin_location: result.data[0].binLocations || [],
+                htsus: result.data[0].htsUS || null,
+                image_url: result.data[0].imageURL || '',
+                total_quantity: result.data[0].quantityOnHand || 0,
+                remaining_quantity: product.remaining_quantity === 0 && result.data[0].htsUS !== null ? Number(result.data[0].htsUS) - Number(product.sold_quantity || 0) : product.remaining_quantity,
+              }
             }
-          } catch (error) {
-            console.error(`Error SKU ${sku}`, error);
+          } catch(error) {
+            initToast({ type: "error", message: `Erreur lors de la récupération des données iPacky pour le SKU: ${sku} - ${String(error)}` });
           }
 
-          return row;
+          return product;
         })
       )
-    );
-
-    setProductSoldList(updatedItems);
-
-    await syncData(updatedItems);
-
+    )
+    console.log(syncProducts);
+    setProductSoldList(syncProducts);
     setIsLoading(false);
-    initToast({
-      type: 'info',
-      message: 'Synchronisation des produits en cours...'
-    });
-  }
-
-  async function syncData(updatedItems: ProductSold[]) {
-    const baseUrl = `/api/conceptc/warehouse`;
-    try {
-      const response = await fetch(baseUrl);
-      if (!response.ok) {
-        throw new Error(`Error fetching data: ${response.statusText}`);
-      }
-      const data = await response.json();
-      if (data.data.length === 0) {
-        const productListForBinSync = updatedItems.map((item) => ({
-          ...item,
-          remainingQuantity: item.htsus ? Number(item.htsus) - Number(item.soldQuantity || '0') : null
-        }));
-        console.log('productList to syncData: ', productListForBinSync);
-        try {
-          const res = await fetch(baseUrl,{
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(productListForBinSync)
-          });
-          if (res.ok) {
-            initToast({
-              type: 'success',
-              message: "Les produits ont été synchronisés avec succès dans l'entrepot."
-            });
-          }
-        } catch(error) {
-          console.error("Error during fetch:", error);
-        }
-      } else {
-        // Voy aca, se continua con validaciones de la lista de productos de shopify vs productos de neon para actualizar el stock restante en la bin
-      }
-    } catch (error) {
-      console.error("Error during fetch:", error);
-    }
   }
 
   return (
@@ -175,7 +170,8 @@ export default function TrackingBinPage() {
                   <thead className="sticky top-0 bg-neutral-200 z-40">
                     <tr>
                       <th className="py-6 px-4 text-left">Info du produit</th>
-                      <th className="text-center py-6">Qty par Bin HTSUS</th>
+                      <th className="text-center py-6">Qty Total</th>
+                      <th className="text-center py-6">Qty Max par Bin HTSUS</th>
                       <th className="text-center py-6">Qty vendus</th>
                       <th className="text-center py-6">Qty restant dans la bin</th>
                       <th className="text-center py-6">Bin</th>
@@ -188,14 +184,14 @@ export default function TrackingBinPage() {
                         <tr key={index} className={`font-bold border-b-2 border-zinc-300 item--${index}`}>
                           <td className="p-4 text-sm font-semibold">
                             {
-                              product.imageUrl.length > 0 &&
+                              product.image_url.length > 0 &&
                               <Image
-                                src={product.imageUrl}
-                                alt={product.name}
+                                src={product.image_url}
+                                alt={product.title}
                                 width={100}
                                 height={60} />
                             }
-                            <span className="block">{ product.name }</span>
+                            <span className="block">{ product.title }</span>
                             <span className="block border-t border-zinc-300 mt-2 pt-2">
                               SKU: { product.sku }
                             </span>
@@ -204,34 +200,43 @@ export default function TrackingBinPage() {
                             </span>
                           </td>
                           <td className="text-center">
+                            <span>{ product.total_quantity }</span>
+                          </td>
+                          <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
                           </td>
                           <td className="text-center">
-                            <span>{ product.soldQuantity }</span>
+                            <span>{ product.sold_quantity }</span>
                           </td>
                           <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>
                               {
-                                product.htsus && product.soldQuantity ? `${ Number(product.htsus) - Number(product.soldQuantity) } (${ Math.round((Number(product.htsus) - Number(product.soldQuantity)) / Number(product.htsus) * 100) }%)` : "inconnu"
+                                product.htsus && product.sold_quantity ? `${product.remaining_quantity ?? 0} (${ Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) }%)` : "inconnu"
                               }
                             </span>
                           </td>
                           <td className="text-center">
                             <div className="flex flex-col gap-2 py-2">
                               {
-                                Array.isArray(product.binLocation) ?
-                                product.binLocation.map((bin, idx) => (
+                                Array.isArray(product.bin_location) ?
+                                product.bin_location.map((bin, idx) => (
                                   <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{ bin }</span>
                                 ))
                                 :
-                                <span>{ product.binLocation }</span>
+                                <span>{ product.bin_location }</span>
                               }
                             </div>
                           </td>
                           <td className="text-center">
-                            <BinStatus
-                              qty={Number(product.soldQuantity)}
-                              maxQty={Number(product.htsus)} />
+                            <div className="flex flex-col items-center justify-center py-2 gap-4">
+                              <BinStatus
+                                qty={Number(product.sold_quantity)}
+                                maxQty={Number(product.htsus)} />
+                              <button className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm">
+                                Bin remplie
+                                <ArchiveBoxArrowDownIcon className="ml-2 inline h-4 w-4" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))
