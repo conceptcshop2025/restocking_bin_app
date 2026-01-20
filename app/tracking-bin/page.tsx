@@ -86,7 +86,7 @@ export default function TrackingBinPage() {
           }
         }
       });
-
+      
       await completeProductListData(productList);
     } catch(error) {
       initToast({ type: "error", message: `Erreur lors de la récupération des données de Shopify: ${String(error)}` });
@@ -96,7 +96,6 @@ export default function TrackingBinPage() {
   // complete data from iPacky
   async function completeProductListData(productList: ProductSold[] = []) {
     const limit = pLimit(5);
-
     const syncProducts = await Promise.all(
       productList.map((product) => 
         limit(async () => {
@@ -117,6 +116,7 @@ export default function TrackingBinPage() {
                 image_url: result.data[0].imageURL || '',
                 total_quantity: result.data[0].quantityOnHand || 0,
                 remaining_quantity: product.remaining_quantity === 0 && result.data[0].htsUS !== null ? Number(result.data[0].htsUS) - Number(product.sold_quantity || 0) : product.remaining_quantity,
+                sold_quantity: product.sold_quantity || '0',
               }
             }
           } catch(error) {
@@ -127,7 +127,7 @@ export default function TrackingBinPage() {
         })
       )
     )
-    console.log(syncProducts);
+
     setProductSoldList(syncProducts);
     setIsLoading(false);
   }
