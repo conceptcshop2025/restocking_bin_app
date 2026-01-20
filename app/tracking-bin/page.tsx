@@ -69,6 +69,7 @@ export default function TrackingBinPage() {
           const matchedProduct = productList?.find(product => product.sku === item.product_variant_sku);
           if( matchedProduct ) {
             matchedProduct.remaining_quantity = Number(matchedProduct.remaining_quantity) - Number(item.net_items_sold);
+            matchedProduct.sold_quantity = item.net_items_sold;
           } else {
             productList.push({
               title: item.product_title,
@@ -126,6 +127,7 @@ export default function TrackingBinPage() {
         })
       )
     )
+    console.log(syncProducts);
     setProductSoldList(syncProducts);
     setIsLoading(false);
   }
@@ -209,7 +211,7 @@ export default function TrackingBinPage() {
                           <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>
                               {
-                                product.htsus && product.sold_quantity ? `${ Number(product.htsus) - Number(product.sold_quantity) } (${ Math.round((Number(product.htsus) - Number(product.sold_quantity)) / Number(product.htsus) * 100) }%)` : "inconnu"
+                                product.htsus && product.sold_quantity ? `${product.remaining_quantity ?? 0} (${ Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) }%)` : "inconnu"
                               }
                             </span>
                           </td>
