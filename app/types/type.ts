@@ -62,16 +62,16 @@ export type CsvRowsProps = {
 }
 
 export type ProductSold = {
-  name: string;
-  type: string;
+  title: string;
+  product_type: string;
   sku: string;
-  soldQuantity?: string;
+  sold_quantity?: string;
   upc: string;
-  binLocation: string[] | string;
+  bin_location: string[] | string;
   htsus: string | null;
-  imageUrl: string;
-  remainingQuantity?:number;
-  totalQuantity?:number;
+  image_url: string;
+  remaining_quantity?:number;
+  total_quantity?:number;
 }
 
 export type BinStatusProps = {
