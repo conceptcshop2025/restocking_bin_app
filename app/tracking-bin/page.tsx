@@ -159,6 +159,42 @@ export default function TrackingBinPage() {
     }
   }
 
+  // update product stock bin
+  async function binRestocked(product: ProductSold) {
+    product.remaining_quantity = product.htsus ? Number(product.htsus) : 0;
+    product.sold_quantity = '0';
+    const param:ProductSold[] = [];
+    param.push(product);
+     
+    const updatedProducts = productSoldList.map(p => {
+      if (product.sku === p.sku) {
+        return { ...product, bin_location: [] };
+      }
+      return p;
+    });
+    setProductSoldList(updatedProducts);
+
+    const baseUrl = `/api/conceptc/warehouse`;
+    try {
+      const res = await fetch(baseUrl,{
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(param)
+      });
+      if (res.ok) {
+        initToast({
+          type: 'success',
+          message: `Le produit SKU: ${product.sku} a été mis à jour avec succès dans l'entrepot.`
+        });
+      }
+    } catch(error) {
+      initToast({ type: "error", message: `Erreur lors de la mise à jour du produit dans l'entrepot: ${String(error)}` });
+    }
+  }
+
+
   return (
     <main>
       { showToast && <Toast type={showToast.type} message={showToast.message} />}
@@ -259,7 +295,9 @@ export default function TrackingBinPage() {
                               <BinStatus
                                 qty={Number(product.sold_quantity)}
                                 maxQty={Number(product.htsus)} />
-                              <button className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm">
+                              <button
+                                className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm"
+                                onClick={() => binRestocked(product)}>
                                 Bin remplie
                                 <ArchiveBoxArrowDownIcon className="ml-2 inline h-4 w-4" />
                               </button>
