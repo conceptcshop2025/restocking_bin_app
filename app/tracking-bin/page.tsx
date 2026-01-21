@@ -141,7 +141,7 @@ export default function TrackingBinPage() {
     const baseUrl = `/api/conceptc/warehouse`;
     try {
       const res = await fetch(baseUrl,{
-        method: 'POST',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
