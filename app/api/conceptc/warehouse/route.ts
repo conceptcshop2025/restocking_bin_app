@@ -48,15 +48,15 @@ export async function POST(req: Request) {
       )
       SELECT *
       FROM UNNEST(
-        ${products.map(p => p.name)}::text[],
-        ${products.map(p => p.type)}::text[],
+        ${products.map(p => p.title)}::text[],
+        ${products.map(p => p.product_type)}::text[],
         ${products.map(p => p.sku)}::text[],
         ${products.map(p => p.upc ?? null)}::text[],
-        ${products.map(p => JSON.stringify(Array.isArray(p.binLocation) ? p.binLocation : []))}::text[],
+        ${products.map(p => JSON.stringify(Array.isArray(p.bin_location) ? p.bin_location : []))}::text[],
         ${products.map(p => p.htsus ?? null)}::text[],
-        ${products.map(p => p.imageUrl ?? null)}::text[],
-        ${products.map(p => p.remainingQuantity ?? 0)}::int[],
-        ${products.map(p => p.totalQuantity ?? 0)}::int[]
+        ${products.map(p => p.image_url ?? null)}::text[],
+        ${products.map(p => p.remaining_quantity ?? 0)}::int[],
+        ${products.map(p => p.total_quantity ?? 0)}::int[]
       )
       RETURNING id;
     `;

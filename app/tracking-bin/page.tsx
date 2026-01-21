@@ -130,6 +130,32 @@ export default function TrackingBinPage() {
 
     setProductSoldList(syncProducts);
     setIsLoading(false);
+    await syncProductListToWarehouse(syncProducts);
+  }
+
+  async function syncProductListToWarehouse(syncProducts: ProductSold[] = []) {
+    initToast({
+      type: 'info',
+      message: 'Synchronisation des produits en cours...'
+    });
+    const baseUrl = `/api/conceptc/warehouse`;
+    try {
+      const res = await fetch(baseUrl,{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(syncProducts)
+      });
+      if (res.ok) {
+        initToast({
+          type: 'success',
+          message: "Les produits ont été synchronisés avec succès dans l'entrepot."
+        });
+      }
+    } catch(error) {
+      initToast({ type: "error", message: `Erreur lors de la synchronisation des produits dans l'entrepot: ${String(error)}` });
+    }
   }
 
   return (
