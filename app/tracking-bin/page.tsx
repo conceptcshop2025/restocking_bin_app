@@ -12,7 +12,7 @@ import Toast from "../components/Toast/Toast";
 import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.4.0";
+  const appVersion = "1.5.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [warehouseProducts, setWarehouseProducts] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -130,6 +130,33 @@ export default function TrackingBinPage() {
 
     setProductSoldList(syncProducts);
     setIsLoading(false);
+    await syncProductListToWarehouse(syncProducts);
+  }
+
+  // save productList in NeonDB
+  async function syncProductListToWarehouse(syncProducts: ProductSold[] = []) {
+    initToast({
+      type: 'info',
+      message: 'Synchronisation des produits en cours...'
+    });
+    const baseUrl = `/api/conceptc/warehouse`;
+    try {
+      const res = await fetch(baseUrl,{
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(syncProducts)
+      });
+      if (res.ok) {
+        initToast({
+          type: 'success',
+          message: "Les produits ont été synchronisés avec succès dans l'entrepot."
+        });
+      }
+    } catch(error) {
+      initToast({ type: "error", message: `Erreur lors de la synchronisation des produits dans l'entrepot: ${String(error)}` });
+    }
   }
 
   return (
