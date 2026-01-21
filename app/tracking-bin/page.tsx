@@ -12,7 +12,7 @@ import Toast from "../components/Toast/Toast";
 import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.4.0";
+  const appVersion = "1.5.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [warehouseProducts, setWarehouseProducts] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -133,6 +133,7 @@ export default function TrackingBinPage() {
     await syncProductListToWarehouse(syncProducts);
   }
 
+  // save productList in NeonDB
   async function syncProductListToWarehouse(syncProducts: ProductSold[] = []) {
     initToast({
       type: 'info',
