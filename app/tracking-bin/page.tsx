@@ -9,12 +9,10 @@ import BinStatus from "../components/BinStatus/BinStatus";
 import pLimit from "p-limit";
 import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.5.0";
+  const appVersion = "1.6.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
-  const [warehouseProducts, setWarehouseProducts] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
 
@@ -43,7 +41,68 @@ export default function TrackingBinPage() {
         await getDataFromShopifyReports();
       } else {
         const productList = data.data;
-        getDataFromShopifyReports(productList)
+        /*  */
+        try {
+          const lastSync = await fetch(`/api/conceptc/sync`);
+          const syncData = await lastSync.json();
+
+          if (syncData.data) {
+            const syncDate = new Date(syncData.data.date);
+            const today = new Date();
+            const isSameDay = syncDate.getFullYear() === today.getFullYear() &&
+                              syncDate.getMonth() === today.getMonth() &&
+                              syncDate.getDate() === today.getDate();
+            if (!isSameDay) {
+              getDataFromShopifyReports(productList);
+              try {
+                const postDate = fetch(`/api/conceptc/sync`,{
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    date: new Date().toISOString()
+                  })
+                });
+                const responsePostDate = await postDate;
+
+                if (!responsePostDate.ok) {
+                  initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation` });
+                }
+                initToast({ type: "success", message: `La date de synchronisation a été mise à jour avec succès.` });
+              } catch(error) {
+                initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation: ${String(error)}` });
+              }
+            } else {
+              await completeProductListData(productList);
+            }
+          } else {
+            initToast({ type: "error", message: "Erreur lors de la récupération des données de synchronisation." });
+            try {
+              const postDate = fetch(`/api/conceptc/sync`,{
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  date: new Date().toISOString()
+                })
+              });
+              const responsePostDate = await postDate;
+
+              if (!responsePostDate.ok) {
+                initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation` });
+              }
+              initToast({ type: "success", message: `La date de synchronisation a été mise à jour avec succès.` });
+            } catch(error) {
+              initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation: ${String(error)}` });
+            }
+            await completeProductListData(productList);
+          }
+        } catch(error) {
+          initToast({ type: "error", message: `Erreur lors de la récupération des données de synchronisation: ${String(error)}` });
+        }
+        /*  */
       }
     } catch(error) {
       initToast({ type: "error", message: `Erreur lors de la récupération des données: ${String(error)}` });
