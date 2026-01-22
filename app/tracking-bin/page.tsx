@@ -11,7 +11,7 @@ import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.6.0";
+  const appVersion = "1.7.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
