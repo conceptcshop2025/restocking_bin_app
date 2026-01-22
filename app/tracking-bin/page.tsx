@@ -227,7 +227,7 @@ export default function TrackingBinPage() {
      
     const updatedProducts = productSoldList.map(p => {
       if (product.sku === p.sku) {
-        return { ...product, bin_location: [] };
+        return { ...product };
       }
       return p;
     });
