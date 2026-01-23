@@ -11,7 +11,7 @@ import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.7.0";
+  const appVersion = "1.8.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
@@ -38,10 +38,10 @@ export default function TrackingBinPage() {
       const data = await response.json();
 
       if (data.data.length === 0) {
-        await getDataFromShopifyReports();
+        await getDataFromShopifyReports([]);
       } else {
         const productList = data.data;
-        /*  */
+
         try {
           const lastSync = await fetch(`/api/conceptc/sync`);
           const syncData = await lastSync.json();
@@ -102,7 +102,7 @@ export default function TrackingBinPage() {
         } catch(error) {
           initToast({ type: "error", message: `Erreur lors de la récupération des données de synchronisation: ${String(error)}` });
         }
-        /*  */
+        
       }
     } catch(error) {
       initToast({ type: "error", message: `Erreur lors de la récupération des données: ${String(error)}` });
@@ -187,7 +187,19 @@ export default function TrackingBinPage() {
       )
     )
 
-    setProductSoldList(syncProducts);
+    const orderedProducts = () => {
+      return [...syncProducts].sort((a, b) => {
+        const aTotal = Number(a.htsus) || 1;
+        const bTotal = Number(b.htsus) || 1;
+
+        const aPercent = (Number(a.remaining_quantity) || 0) / aTotal;
+        const bPercent = (Number(b.remaining_quantity) || 0) / bTotal;
+
+        return aPercent - bPercent;
+      });
+    };
+
+    setProductSoldList(orderedProducts());
     setIsLoading(false);
     await syncProductListToWarehouse(syncProducts);
   }
@@ -303,7 +315,15 @@ export default function TrackingBinPage() {
                   <tbody>
                     {
                       productSoldList.map((product:ProductSold, index:number) => (
-                        <tr key={index} className={`font-bold border-b-2 border-zinc-300 item--${index}`}>
+                        <tr
+                          key={index}
+                          className={`
+                            font-bold
+                            border-b-2
+                            border-zinc-300
+                            item--${index}
+                            ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' }
+                          `}>
                           <td className="p-4 text-sm font-semibold">
                             {
                               product.image_url.length > 0 &&
@@ -352,8 +372,7 @@ export default function TrackingBinPage() {
                           <td className="text-center">
                             <div className="flex flex-col items-center justify-center py-2 gap-4">
                               <BinStatus
-                                qty={Number(product.sold_quantity)}
-                                maxQty={Number(product.htsus)} />
+                                percentage={product.remaining_quantity ? Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) : 0} />
                               <button
                                 className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm"
                                 onClick={() => binRestocked(product)}>
