@@ -4,10 +4,13 @@ const baseUrl = process.env.SHOPIFY_DOMAIN_NAME || "";
 const apiVersion = process.env.SHOPIFY_API_VERSION || "";
 const apiToken = process.env.SHOPIFY_ADMIN_API_TOKEN || "";
 
-export async function GET() {
+export async function POST(req: Request) {
+  const body = await req.json();
+  const date = body.date;
+  
   const query = `
     query {
-      shopifyqlQuery(query: "FROM sales SHOW net_items_sold WHERE line_type = 'product' AND sales_channel = 'Online Store' GROUP BY product_title, product_variant_title, product_variant_sku, product_type WITH TOTALS, CURRENCY 'CAD' DURING yesterday ORDER BY net_items_sold DESC LIMIT 250") {
+      shopifyqlQuery(query: "FROM sales SHOW net_items_sold WHERE line_type = 'product' AND sales_channel = 'Online Store' GROUP BY product_title, product_variant_title, product_variant_sku, product_type WITH TOTALS, CURRENCY 'CAD' SINCE ${date} UNTIL today ORDER BY net_items_sold DESC LIMIT 250") {
         tableData {
           columns {
             name
