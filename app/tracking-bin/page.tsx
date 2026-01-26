@@ -11,7 +11,7 @@ import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.8.0";
+  const appVersion = "1.9.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
@@ -38,7 +38,7 @@ export default function TrackingBinPage() {
       const data = await response.json();
 
       if (data.data.length === 0) {
-        await getDataFromShopifyReports([]);
+        await getDataFromShopifyReports([], null);
       } else {
         const productList = data.data;
 
@@ -53,7 +53,7 @@ export default function TrackingBinPage() {
                               syncDate.getMonth() === today.getMonth() &&
                               syncDate.getDate() === today.getDate();
             if (!isSameDay) {
-              getDataFromShopifyReports(productList);
+              getDataFromShopifyReports(productList, syncData);
               try {
                 const postDate = fetch(`/api/conceptc/sync`,{
                   method: 'POST',
@@ -110,10 +110,29 @@ export default function TrackingBinPage() {
   }
 
   // get from Shopify Reports API
-  async function getDataFromShopifyReports(productList?: ProductSold[]){
+  async function getDataFromShopifyReports(productList?: ProductSold[], lastSync?: any | null){
+    
+    let params = {
+      date: '',
+    }
+    
+    if (lastSync !== null) {
+      params.date = lastSync.data.date;
+    } else {
+      params.date = new Date().toISOString();
+    }
+
+    params.date = params.date.split('T')[0];
+
     try {
       const baseUrl = `/api/shopify/reports`;
-      const response = await fetch(baseUrl);
+      const response = await fetch(baseUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(params)
+      });
 
       if (!response.ok) {
         throw new Error(`Error fetching data: ${response.statusText}`);
