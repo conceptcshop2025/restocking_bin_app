@@ -336,7 +336,7 @@ export default function TrackingBinPage() {
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Obtenir ventes de la journée précédente
         </button>
-        <div className="filtres">
+        <div className="filtres hidden">
           <p>Filtres:</p>
           <select name="product-filtre" id="product-filtre" className="border-b border-sky-700" value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="none">Aucun</option>
