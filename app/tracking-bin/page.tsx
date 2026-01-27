@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowUturnLeftIcon, ArchiveBoxArrowDownIcon } from "@heroicons/react/16/solid";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ProductSold, ToastProps } from "../types/type";
 import BinStatus from "../components/BinStatus/BinStatus";
 import pLimit from "p-limit";
@@ -11,10 +11,11 @@ import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.9.0";
+  const appVersion = "1.10.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
+  const [filter, setFilter] = useState<string>('none');
 
   function initToast(content:ToastProps | null) {
     setShowToast(content);
@@ -74,7 +75,9 @@ export default function TrackingBinPage() {
                 initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation: ${String(error)}` });
               }
             } else {
-              await completeProductListData(productList);
+              // if same day, just complete data from NeonDB
+              setProductSoldList(reorderProductList(productList));
+              setIsLoading(false);
             }
           } else {
             initToast({ type: "error", message: "Erreur lors de la récupération des données de synchronisation." });
@@ -206,19 +209,7 @@ export default function TrackingBinPage() {
       )
     )
 
-    const orderedProducts = () => {
-      return [...syncProducts].sort((a, b) => {
-        const aTotal = Number(a.htsus) || 1;
-        const bTotal = Number(b.htsus) || 1;
-
-        const aPercent = (Number(a.remaining_quantity) || 0) / aTotal;
-        const bPercent = (Number(b.remaining_quantity) || 0) / bTotal;
-
-        return aPercent - bPercent;
-      });
-    };
-
-    setProductSoldList(orderedProducts());
+    setProductSoldList(reorderProductList(syncProducts));
     setIsLoading(false);
     await syncProductListToWarehouse(syncProducts);
   }
@@ -284,6 +275,39 @@ export default function TrackingBinPage() {
     }
   }
 
+  // Reorder product list by bin percentage
+  function reorderProductList(productList: ProductSold[] = []) {
+    return [...productList].sort((a, b) => {
+      const aTotal = Number(a.htsus) || 1;
+      const bTotal = Number(b.htsus) || 1;
+
+      const aPercent = (Number(a.remaining_quantity) || 0) / aTotal;
+      const bPercent = (Number(b.remaining_quantity) || 0) / bTotal;
+
+      return aPercent - bPercent;
+    });
+  }
+
+  // set filter class
+  function setFilterClass(htsus: string | null, remaining_quantity: string | number | undefined) {
+    const total = Number(htsus) || 1;
+    const remaining = Number(remaining_quantity) || 0;
+    const percent = (remaining / total) * 100;
+
+    if(!htsus) {
+      return 'unknown';
+    } else {
+      if (percent <= 0) {
+        return "out-of-stock";
+      } else if (percent <= 25) {
+        return "low-stock";
+      } else if (percent <= 50) {
+        return "medium-stock";
+      } else {
+        return "high-stock";
+      }
+    }
+  }
 
   return (
     <main>
@@ -308,10 +332,21 @@ export default function TrackingBinPage() {
         <h1 className="text-4xl font-bold">Suivi de stock des bins</h1>
         <p className="mb-4"><small>V.{appVersion}</small></p>
       </section>
-      <div className="container flex justify-center w-full mx-auto mb-4">
+      <div className="container flex justify-center w-full mx-auto mb-4 gap-4">
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Obtenir ventes de la journée précédente
         </button>
+        <div className="filtres">
+          <p>Filtres:</p>
+          <select name="product-filtre" id="product-filtre" className="border-b border-sky-700" value={filter} onChange={(e) => setFilter(e.target.value)}>
+            <option value="none">Aucun</option>
+            <option value="remove-unknown">Cacher les produits en inconnu</option>
+            <option value="view-only-out-of-stock">Montrer seulement les produits en Rupture de stock</option>
+            <option value="view-only-low-stock">Montrer seulement les produits en stock faible</option>
+            <option value="view-only-medium-stock">Montrer seulement les produits en stock moyen</option>
+            <option value="view-only-high-stock">Montrer seulement les produits en stock élevé</option>
+          </select>
+        </div>
       </div>
 
       {
@@ -325,7 +360,7 @@ export default function TrackingBinPage() {
                       <th className="py-6 px-4 text-left">Info du produit</th>
                       <th className="text-center py-6">Qty Total</th>
                       <th className="text-center py-6">Qty Max par Bin HTSUS</th>
-                      <th className="text-center py-6">Qty vendus</th>
+                      {/* <th className="text-center py-6">Qty vendus</th> */}
                       <th className="text-center py-6">Qty restant dans la bin</th>
                       <th className="text-center py-6">Bin</th>
                       <th className="text-center py-6">Statut</th>
@@ -337,11 +372,13 @@ export default function TrackingBinPage() {
                         <tr
                           key={index}
                           className={`
+                            product-row-item
                             font-bold
                             border-b-2
                             border-zinc-300
                             item--${index}
                             ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' }
+                            ${ setFilterClass(product.htsus, product.remaining_quantity) }
                           `}>
                           <td className="p-4 text-sm font-semibold">
                             {
@@ -366,20 +403,34 @@ export default function TrackingBinPage() {
                           <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
                           </td>
-                          <td className="text-center">
+                          {/* <td className="text-center">
                             <span>{ product.sold_quantity }</span>
-                          </td>
+                          </td> */}
                           <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>
                               {
-                                product.htsus && product.sold_quantity ? `${product.remaining_quantity ?? 0} (${ Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) }%)` : "inconnu"
+                                `
+                                  ${product.remaining_quantity}
+                                  ${
+                                    product.htsus && !isNaN(Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)))
+                                      ? `(${Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100))}%)`
+                                      : ""
+                                  }
+                                `
                               }
                             </span>
                           </td>
                           <td className="text-center">
                             <div className="flex flex-col gap-2 py-2">
                               {
-                                Array.isArray(product.bin_location) ?
+                                typeof product.bin_location === 'string' ? 
+                                  JSON.parse(product.bin_location).map((bin:string, idx:number) => (
+                                    <span
+                                      key={idx}
+                                      className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">
+                                      { bin }
+                                    </span>
+                                )) : Array.isArray(product.bin_location) ?
                                 product.bin_location.map((bin, idx) => (
                                   <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{ bin }</span>
                                 ))
