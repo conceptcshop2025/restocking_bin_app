@@ -1,0 +1,19 @@
+.remove-unknown tr.unknown {
+  display: none;
+}
+
+.view-only-out-of-stock tr:not(.out-of-stock) {
+  display: none;
+}
+
+.view-only-low-stock tr:not(.low-stock) {
+  display: none;
+}
+
+.view-only-medium-stock tr:not(.medium-stock) {
+  display: none;
+}
+
+.view-only-high-stock tr:not(.high-stock) {
+  display: none;
+}
