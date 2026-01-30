@@ -9,9 +9,10 @@ import BinStatus from "../components/BinStatus/BinStatus";
 import pLimit from "p-limit";
 import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
+import './TrackingBinPage.css';
 
 export default function TrackingBinPage() {
-  const appVersion = "1.10.0";
+  const appVersion = "1.11.0";
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
@@ -336,7 +337,7 @@ export default function TrackingBinPage() {
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Obtenir ventes de la journée précédente
         </button>
-        <div className="filtres hidden">
+        <div className="filtres">
           <p>Filtres:</p>
           <select name="product-filtre" id="product-filtre" className="border-b border-sky-700" value={filter} onChange={(e) => setFilter(e.target.value)}>
             <option value="none">Aucun</option>
@@ -366,20 +367,12 @@ export default function TrackingBinPage() {
                       <th className="text-center py-6">Statut</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className={filter}>
                     {
                       productSoldList.map((product:ProductSold, index:number) => (
                         <tr
                           key={index}
-                          className={`
-                            product-row-item
-                            font-bold
-                            border-b-2
-                            border-zinc-300
-                            item--${index}
-                            ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' }
-                            ${ setFilterClass(product.htsus, product.remaining_quantity) }
-                          `}>
+                          className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity) }`}>
                           <td className="p-4 text-sm font-semibold">
                             {
                               product.image_url.length > 0 &&
