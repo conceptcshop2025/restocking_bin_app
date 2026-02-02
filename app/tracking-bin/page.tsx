@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.12.0";
+  const appVersion = "2.0.0";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -43,7 +43,9 @@ export default function TrackingBinPage() {
       const data = await response.json();
 
       if (data.data.length === 0) {
-        await getDataFromShopifyReports([], null);
+        const lastSync = await fetch(`/api/conceptc/sync`);
+        const syncData = await lastSync.json();
+        await getDataFromShopifyReports([], syncData);
         try {
           const postDate = fetch(`/api/conceptc/sync`,{
             method: 'POST',
