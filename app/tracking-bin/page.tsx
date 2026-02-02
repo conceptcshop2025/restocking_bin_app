@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "1.11.0";
+  const appVersion = "1.12.0";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -44,6 +44,25 @@ export default function TrackingBinPage() {
 
       if (data.data.length === 0) {
         await getDataFromShopifyReports([], null);
+        try {
+          const postDate = fetch(`/api/conceptc/sync`,{
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              date: new Date().toISOString()
+            })
+          });
+          const responsePostDate = await postDate;
+
+          if (!responsePostDate.ok) {
+            initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation` });
+          }
+          initToast({ type: "success", message: `La date de synchronisation a été mise à jour avec succès.` });
+        } catch(error) {
+          initToast({ type: "error", message: `Erreur lors de la sauvegarde de la date de synchronisation: ${String(error)}` });
+        }
       } else {
         const productList = data.data;
 
