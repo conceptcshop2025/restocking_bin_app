@@ -10,7 +10,7 @@ export async function POST(req: Request) {
   
   const query = `
     query {
-      shopifyqlQuery(query: "FROM sales SHOW net_items_sold WHERE line_type = 'product' AND sales_channel = 'Online Store' GROUP BY product_title, product_variant_title, product_variant_sku, product_type WITH TOTALS, CURRENCY 'CAD' SINCE ${date} UNTIL today ORDER BY net_items_sold DESC LIMIT 250") {
+      shopifyqlQuery(query: "FROM sales SHOW net_items_sold WHERE line_type = 'product' AND sales_channel = 'Online Store' GROUP BY product_title, product_variant_title, product_variant_sku, product_type WITH TOTALS, CURRENCY 'CAD' SINCE ${date} UNTIL today ORDER BY net_items_sold DESC LIMIT 500") {
         tableData {
           columns {
             name
