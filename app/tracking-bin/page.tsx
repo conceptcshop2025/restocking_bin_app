@@ -14,12 +14,13 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.0.0";
+  const appVersion = "2.1.0";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
   const [filter, setFilter] = useState<string>('none');
+  const [sortBy, setSortBy] = useState<string>('percentage');
 
   function initToast(content:ToastProps | null) {
     setShowToast(content);
@@ -357,6 +358,22 @@ export default function TrackingBinPage() {
     }
   }
 
+  // change sort method
+  useEffect(() => {
+    if (sortBy === 'percentage') {
+      setProductSoldList(reorderProductList(productSoldList));
+    } else if (sortBy === 'bin-location') {
+      const sortedList = [...productSoldList].sort((a, b) => {
+        const aBin = typeof a.bin_location === 'string' ? JSON.parse(a.bin_location)[0] || '' : Array.isArray(a.bin_location) ? a.bin_location[0] || '' : '';
+        const bBin = typeof b.bin_location === 'string' ? JSON.parse(b.bin_location)[0] || '' : Array.isArray(b.bin_location) ? b.bin_location[0] || '' : '';
+        return aBin.localeCompare(bBin);
+      });
+      setProductSoldList(sortedList);
+    }
+  }, [sortBy]);
+
+
+
   return (
     <main>
       { showToast && <Toast type={showToast.type} message={showToast.message} />}
@@ -382,21 +399,30 @@ export default function TrackingBinPage() {
       </section>
       <div className="container flex justify-center w-full mx-auto mb-4 gap-4">
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
-          Obtenir ventes de la journée précédente
+          Synchroniser les données des bins
         </button>
         {
           productSoldList.length > 0 &&
-            <div className="filtres">
-              <p>Filtres:</p>
-              <select name="product-filtre" id="product-filtre" className="border-b border-sky-700" value={filter} onChange={(e) => setFilter(e.target.value)}>
-                <option value="none">Aucun</option>
-                <option value="remove-unknown">Cacher les produits en inconnu</option>
-                <option value="view-only-out-of-stock">Montrer seulement les produits en Rupture de stock</option>
-                <option value="view-only-low-stock">Montrer seulement les produits en stock faible</option>
-                <option value="view-only-medium-stock">Montrer seulement les produits en stock moyen</option>
-                <option value="view-only-high-stock">Montrer seulement les produits en stock élevé</option>
-              </select>
-            </div>
+            <>
+              <div className="filtres">
+                <p>Filtres:</p>
+                <select name="product-filtre" id="product-filtre" className="border-b border-sky-700" value={filter} onChange={(e) => setFilter(e.target.value)}>
+                  <option value="none">Aucun</option>
+                  <option value="remove-unknown">Cacher les produits en inconnu</option>
+                  <option value="view-only-out-of-stock">Montrer seulement les produits en Rupture de stock</option>
+                  <option value="view-only-low-stock">Montrer seulement les produits en stock faible</option>
+                  <option value="view-only-medium-stock">Montrer seulement les produits en stock moyen</option>
+                  <option value="view-only-high-stock">Montrer seulement les produits en stock élevé</option>
+                </select>
+              </div>
+              <div className="sort-list">
+                <p>Trier par:</p>
+                <select name="product-sort" id="product-sort" className="border-b border-sky-700" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                  <option value="percentage">Pourcentage de stock</option>
+                  <option value="bin-location">Emplacement du bin</option>
+                </select>
+              </div>
+            </>
         }
       </div>
 
