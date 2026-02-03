@@ -17,3 +17,19 @@
 .view-only-high-stock tr:not(.high-stock) {
   display: none;
 }
+
+@keyframes highlightAnimation {
+  0% {
+    background-color: #ffffff;
+  }
+  50% {
+    background-color: #81ffee;
+  }
+  100% {
+    background-color: #ffffff;
+  }
+}
+
+.product-row-item.highlight {
+  animation: highlightAnimation 1.5s ease-in-out infinite;
+}

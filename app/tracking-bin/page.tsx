@@ -14,13 +14,15 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.1.0";
+  const appVersion = "2.2.0";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [showToast, setShowToast] = useState<ToastProps | null>(null);
   const [filter, setFilter] = useState<string>('none');
   const [sortBy, setSortBy] = useState<string>('percentage');
+  const [searchInput, setSearchInput] = useState<string>('');
+  const [debouncedSearchInput, setDebouncedSearchInput] = useState<string>(searchInput);
 
   function initToast(content:ToastProps | null) {
     setShowToast(content);
@@ -372,7 +374,44 @@ export default function TrackingBinPage() {
     }
   }, [sortBy]);
 
+  // debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchInput(searchInput);
+    }, 500);
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchInput]);
 
+  useEffect(() => {
+    if (debouncedSearchInput) {
+      searchProduct(debouncedSearchInput);
+    }
+  }, [debouncedSearchInput]);
+
+  // search product by sku or upc
+  function searchProduct(code: string) {
+    const findProduct = productSoldList.find(product => product.sku === code || product.upc === code);
+    if (findProduct) {
+      const allElements = document.querySelectorAll('.product-row-item.highlight');
+      allElements.forEach(element => {
+        element.classList.remove('highlight');
+      });
+      const index = productSoldList.indexOf(findProduct);
+      const element = document.querySelector(`.item--${index}`);
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        element.classList.add('highlight');
+      }
+    } else {
+      initToast({ type: "error", message: `Aucun produit trouvé avec le SKU ou l'UPC: ${code}` });
+    }
+
+    setTimeout(() => {
+      setSearchInput("");
+    }, 1000);
+  }
 
   return (
     <main>
@@ -397,7 +436,7 @@ export default function TrackingBinPage() {
         <h1 className="text-4xl font-bold">Suivi de stock des bins</h1>
         <p className="mb-4"><small>V.{appVersion}</small></p>
       </section>
-      <div className="container flex justify-center w-full mx-auto mb-4 gap-4">
+      <div className="px-4 flex justify-center w-full mx-auto mb-4 gap-4">
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Synchroniser les données des bins
         </button>
@@ -421,6 +460,16 @@ export default function TrackingBinPage() {
                   <option value="percentage">Pourcentage de stock</option>
                   <option value="bin-location">Emplacement du bin</option>
                 </select>
+              </div>
+              <div className="search-bar">
+                <p>Rechercher par SKU ou UPC:</p>
+                <input
+                  type="text"
+                  className="border-b border-sky-700"
+                  placeholder="Entrez le SKU ou l'UPC"
+                  id="search-input"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)} />
               </div>
             </>
         }
