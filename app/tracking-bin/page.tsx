@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.2.0";
+  const appVersion = "2.3.0";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -413,6 +413,41 @@ export default function TrackingBinPage() {
     }, 1000);
   }
 
+  //update remaining quantity
+  function updateRemainingQty(product: ProductSold) {
+    MySwal.fire({
+      title: `Mettre à jour la quantité restante pour le produit SKU: ${product.sku}`,
+      input: 'number',
+      inputLabel: 'Quantité restante',
+      inputValue: product.remaining_quantity,
+      showCancelButton: true,
+      confirmButtonText: "Mettre à jour",
+      confirmButtonColor: "#016630",
+      cancelButtonText: "Annuler",
+      cancelButtonColor: "#d33",
+      preConfirm: (value) => {
+        const newQty = Number(value);
+        if (isNaN(newQty)) {
+          MySwal.showValidationMessage('Veuillez entrer une quantité valide.');
+        }
+        return newQty;
+      }
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        const newQty = result.value;
+        product.remaining_quantity = newQty;
+        const updatedProducts = productSoldList.map(p => {
+          if (product.sku === p.sku) {
+            return { ...product };
+          }
+          return p;
+        });
+        setProductSoldList(updatedProducts);
+        syncProductListToWarehouse([product]);
+      }
+    });
+  }
+
   return (
     <main>
       { showToast && <Toast type={showToast.type} message={showToast.message} />}
@@ -537,6 +572,11 @@ export default function TrackingBinPage() {
                                 `
                               }
                             </span>
+                            <button
+                              className="block text-sky-600 underline mt-2 text-sm mx-auto cursor-pointer"
+                              onClick={() => updateRemainingQty(product)}>
+                              <small>Corriger la valeur</small>
+                            </button>
                           </td>
                           <td className="text-center">
                             <div className="flex flex-col gap-2 py-2">
