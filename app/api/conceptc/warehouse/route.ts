@@ -108,9 +108,32 @@ export async function PUT(req: Request) {
         ${products.map(p => p.product_type)}::text[],
         ${products.map(p => p.sku)}::text[],
         ${products.map(p => p.upc ?? null)}::text[],
-        ${products.map(p =>
-          JSON.stringify(Array.isArray(p.bin_location) ? p.bin_location : [])
-        )}::text[],
+        ${products.map(p => {
+          let bin = p.bin_location;
+
+          if (!bin) {
+            return JSON.stringify([]);
+          }
+
+          // Si viene como string
+          if (typeof bin === "string") {
+            try {
+              const parsed = JSON.parse(bin);
+              return JSON.stringify(Array.isArray(parsed) ? parsed : [bin]);
+            } catch {
+              // string normal tipo "132.01.03.F"
+              return JSON.stringify([bin]);
+            }
+          }
+
+          // Si ya es array
+          if (Array.isArray(bin)) {
+            return JSON.stringify(bin);
+          }
+
+          // Cualquier otro caso raro
+          return JSON.stringify([]);
+        })}::text[],
         ${products.map(p => p.htsus ?? null)}::text[],
         ${products.map(p => p.image_url ?? null)}::text[],
         ${products.map(p => p.remaining_quantity ?? 0)}::int[],
