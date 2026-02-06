@@ -10,8 +10,6 @@ import HistoryList from "../components/HistoryList/HistoryList";
 import BinValidator from "../components/BinValidator/BinValidator";
 import { TrashIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 import CsvImport from "../components/CsvImport/CsvImport";
-import { initialize } from "next/dist/server/lib/render-server";
-import { init } from "next/dist/compiled/webpack/webpack";
 
 export default function Home() {
   const appVersion:string = "5.0.0";
