@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
-import { Product, ToastProps, HistoryListProps } from "../types/type";
+import { Product, ToastProps, HistoryListProps, ProductSold } from "../types/type";
 import Modal from "../components/Modal/Modal";
 import { Loader } from "../components/Loader/Loader";
 import Toast from "../components/Toast/Toast";
@@ -259,6 +259,11 @@ export default function Home() {
       findProduct.restocked = status;
       setProductList([...productList]);
     }
+
+    if (status === true) {
+      await updateRemainingQuantityToProductInfo(findProduct as Product);
+    }
+
     return;
   }
 
@@ -310,6 +315,32 @@ export default function Home() {
   function removeProductFromList(upc:string) {
     const listFiltered = productList.filter(key => key.upc !== upc);
     setProductList(listFiltered);
+  }
+
+  // update product remaining quantity after restocking of Neon DB
+  async function updateRemainingQuantityToProductInfo(product:Product) {
+    try {
+      const response = await fetch('/api/conceptc/restock', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(product)
+      });
+
+      const data = await response.json();
+
+      if (data.data.length === 0) {
+        initToast({type: "error", message: "Le produit n'a pas été trouvé dans la base de données pour mettre à jour la quantité restante." });
+        return;
+      } else {
+        initToast({type: "success", message: `La quantité restante du produit (UPC: ${product.upc}) a été mise à jour avec succès.` });
+      }
+      
+
+    } catch (error) {
+      initToast({type: "error", message: "Une erreur est survenue lors de la mise à jour de la quantité restante du produit." });
+    }
   }
 
   return (
