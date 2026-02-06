@@ -320,7 +320,6 @@ export default function Home() {
   // update product remaining quantity after restocking of Neon DB
   async function updateRemainingQuantityToProductInfo(product:Product) {
     try {
-      console.log(product)
       const response = await fetch('/api/conceptc/restock', {
         method: 'POST',
         headers: {
