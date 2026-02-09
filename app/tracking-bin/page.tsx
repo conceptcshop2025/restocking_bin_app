@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.4.0";
+  const appVersion = "2.5.0";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -448,6 +448,20 @@ export default function TrackingBinPage() {
     });
   }
 
+  // show remaining quantity if exist and different from htsus
+  function showRemainingQty(product: ProductSold) {
+    const remainingValue = product.remaining_quantity;
+    let percentageValue = "";
+
+    if ((product.total_quantity ?? 0) <= Number(product.htsus ?? 0)) {
+      percentageValue = `${Math.round((Number(product.remaining_quantity) * 100) / Number(product.total_quantity))}`;
+    } else if (product.htsus && !isNaN(Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)))) {
+      percentageValue = `${Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100))}`;
+    } 
+
+    return `${remainingValue}${percentageValue !== "" && !isNaN(Number(percentageValue)) && Number(percentageValue) !== Infinity ? `% (${percentageValue}%)` : ''}`;
+  }
+
   return (
     <main>
       { showToast && <Toast type={showToast.type} message={showToast.message} />}
@@ -562,14 +576,7 @@ export default function TrackingBinPage() {
                           <td className="text-center">
                             <span className={`${!product.htsus && 'text-red-500'}`}>
                               {
-                                `
-                                  ${product.remaining_quantity}
-                                  ${
-                                    product.htsus && !isNaN(Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)))
-                                      ? `(${Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100))}%)`
-                                      : ""
-                                  }
-                                `
+                                showRemainingQty(product)
                               }
                             </span>
                             <button
