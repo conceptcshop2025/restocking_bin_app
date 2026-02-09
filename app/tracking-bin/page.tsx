@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.5.0";
+  const appVersion = "2.5.1";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -459,7 +459,7 @@ export default function TrackingBinPage() {
       percentageValue = `${Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100))}`;
     } 
 
-    return `${remainingValue}${percentageValue !== "" && !isNaN(Number(percentageValue)) && Number(percentageValue) !== Infinity ? `% (${percentageValue}%)` : ''}`;
+    return `${remainingValue}${percentageValue !== "" && !isNaN(Number(percentageValue)) && Number(percentageValue) !== Infinity ? ` (${percentageValue}%)` : ''}`;
   }
 
   return (
