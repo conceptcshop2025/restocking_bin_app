@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.6.3";
+  const appVersion = "2.7.4";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -226,6 +226,7 @@ export default function TrackingBinPage() {
                 total_quantity: result.data[0].quantityOnHand || 0,
                 remaining_quantity: product.remaining_quantity === 0 && result.data[0].htsUS !== null ? Number(result.data[0].htsUS) - Number(product.sold_quantity || 0) : product.remaining_quantity,
                 sold_quantity: product.sold_quantity || '0',
+                variantTitle: result.data[0].variantTitle || ''
               }
             }
           } catch(error) {
@@ -561,7 +562,16 @@ export default function TrackingBinPage() {
                                     style={{width: 'auto'}} />
                                 }
                               </span>
-                              <span className="block">{ product.title }</span>
+                              <span className="block">
+                                { product.title }
+                                {
+                                  product.variantTitle && (
+                                    <small className="bg-zinc-200 py-1 px-2 rounded-lg ml-1">
+                                      { product.variantTitle }
+                                    </small>
+                                  )
+                                }  
+                              </span>
                               <span className="block border-t border-zinc-300 mt-2 pt-2">
                                 SKU: { product.sku }
                               </span>
