@@ -486,7 +486,7 @@ export default function TrackingBinPage() {
         <h1 className="text-4xl font-bold">Suivi de stock des bins</h1>
         <p className="mb-4"><small>V.{appVersion}</small></p>
       </section>
-      <div className="px-4 flex justify-center w-full mx-auto mb-4 gap-4">
+      <div className="px-4 flex justify-center w-full mx-auto gap-4 sticky top-0 bg-neutral-50 z-50 py-4">
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Synchroniser les données des bins
         </button>
@@ -531,7 +531,7 @@ export default function TrackingBinPage() {
           : productSoldList.length > 0 && 
               <div className="product-list">
                 <table className="table-fixed w-full">
-                  <thead className="sticky top-0 bg-neutral-200 z-40">
+                  <thead className="sticky top-20 bg-neutral-200 z-40">
                     <tr>
                       <th className="py-6 px-4 text-left">Info du produit</th>
                       <th className="text-center py-6">Qty Total</th>
