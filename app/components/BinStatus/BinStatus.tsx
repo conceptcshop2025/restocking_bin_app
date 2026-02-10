@@ -1,12 +1,15 @@
 import type { BinStatusProps } from "@/app/types/type";
 import './bin-status.css';
 
-export default function BinStatus({ percentage }: BinStatusProps) {
+export default function BinStatus({ percentage, totalQty, htsus, remainingQty }: BinStatusProps) {
   let statusLabel = 'inconnu';
   let status = 'unknown';
-
-  const rawPercentage = percentage;
+  let rawPercentage = percentage;
   let finalPercentage = Math.max(0, Math.min(100, Math.round(rawPercentage)))
+
+  if (totalQty <= htsus) {
+    finalPercentage = Math.round((remainingQty * 100) / totalQty)
+  }
 
   if (isNaN(finalPercentage)) {
     finalPercentage = 0;

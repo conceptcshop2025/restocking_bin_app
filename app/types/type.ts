@@ -72,8 +72,12 @@ export type ProductSold = {
   image_url: string;
   remaining_quantity?:number;
   total_quantity?:number;
+  variantTitle?: string;
 }
 
 export type BinStatusProps = {
   percentage: number;
+  totalQty: number;
+  htsus: number;
+  remainingQty: number;
 }

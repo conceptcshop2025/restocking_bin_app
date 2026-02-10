@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.5.1";
+  const appVersion = "2.7.4";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -226,6 +226,7 @@ export default function TrackingBinPage() {
                 total_quantity: result.data[0].quantityOnHand || 0,
                 remaining_quantity: product.remaining_quantity === 0 && result.data[0].htsUS !== null ? Number(result.data[0].htsUS) - Number(product.sold_quantity || 0) : product.remaining_quantity,
                 sold_quantity: product.sold_quantity || '0',
+                variantTitle: result.data[0].variantTitle || ''
               }
             }
           } catch(error) {
@@ -478,6 +479,7 @@ export default function TrackingBinPage() {
           alt="Concept C logo"
           width={300}
           height={60}
+          style={{width: 'auto'}}
           priority
         />
       </header>
@@ -485,7 +487,7 @@ export default function TrackingBinPage() {
         <h1 className="text-4xl font-bold">Suivi de stock des bins</h1>
         <p className="mb-4"><small>V.{appVersion}</small></p>
       </section>
-      <div className="px-4 flex justify-center w-full mx-auto mb-4 gap-4">
+      <div className="px-4 flex justify-center w-full mx-auto gap-4 sticky top-0 bg-neutral-50 z-50 py-4">
         <button className="bg-sky-500 py-2 px-4 rounded-lg flex items-center justify-center gap-4 hover:bg-sky-700 ease-in-out duration-300 cursor-pointer text-white" onClick={() => getData()}>
           Synchroniser les données des bins
         </button>
@@ -530,7 +532,7 @@ export default function TrackingBinPage() {
           : productSoldList.length > 0 && 
               <div className="product-list">
                 <table className="table-fixed w-full">
-                  <thead className="sticky top-0 bg-neutral-200 z-40">
+                  <thead className="sticky top-20 bg-neutral-200 z-40">
                     <tr>
                       <th className="py-6 px-4 text-left">Info du produit</th>
                       <th className="text-center py-6">Qty Total</th>
@@ -544,79 +546,97 @@ export default function TrackingBinPage() {
                   <tbody className={filter}>
                     {
                       productSoldList.map((product:ProductSold, index:number) => (
-                        <tr
-                          key={index}
-                          className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity) }`}>
-                          <td className="p-4 text-sm font-semibold">
-                            {
-                              product.image_url.length > 0 &&
-                              <Image
-                                src={product.image_url}
-                                alt={product.title}
-                                width={100}
-                                height={60} />
-                            }
-                            <span className="block">{ product.title }</span>
-                            <span className="block border-t border-zinc-300 mt-2 pt-2">
-                              SKU: { product.sku }
-                            </span>
-                            <span className="block">
-                              UPC: { product.upc }
-                            </span>
-                          </td>
-                          <td className="text-center">
-                            <span>{ product.total_quantity }</span>
-                          </td>
-                          <td className="text-center">
-                            <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
-                          </td>
-                          {/* <td className="text-center">
-                            <span>{ product.sold_quantity }</span>
-                          </td> */}
-                          <td className="text-center">
-                            <span className={`${!product.htsus && 'text-red-500'}`}>
-                              {
-                                showRemainingQty(product)
-                              }
-                            </span>
-                            <button
-                              className="block text-sky-600 underline mt-2 text-sm mx-auto cursor-pointer"
-                              onClick={() => updateRemainingQty(product)}>
-                              <small>Corriger la valeur</small>
-                            </button>
-                          </td>
-                          <td className="text-center">
-                            <div className="flex flex-col gap-2 py-2">
-                              {
-                                typeof product.bin_location === 'string' ? 
-                                  JSON.parse(product.bin_location).map((bin:string, idx:number) => (
-                                    <span
-                                      key={idx}
-                                      className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">
-                                      { bin }
-                                    </span>
-                                )) : Array.isArray(product.bin_location) ?
-                                product.bin_location.map((bin, idx) => (
-                                  <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{ bin }</span>
-                                ))
-                                :
-                                <span>{ product.bin_location }</span>
-                              }
-                            </div>
-                          </td>
-                          <td className="text-center">
-                            <div className="flex flex-col items-center justify-center py-2 gap-4">
-                              <BinStatus
-                                percentage={product.remaining_quantity ? Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) : 0} />
+                        (product.total_quantity ?? 0) > 0 && (
+                          <tr
+                            key={index}
+                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity) }`}>
+                            <td className="p-4 text-sm font-semibold">
+                              <span className="h-[128px] block">
+                                {
+                                  product.image_url.length > 0 &&
+                                  <Image
+                                    src={product.image_url}
+                                    alt={product.title}
+                                    width={100}
+                                    height={60}
+                                    style={{width: 'auto'}} />
+                                }
+                              </span>
+                              <span className="block">
+                                { product.title }
+                                {
+                                  product.variantTitle && (
+                                    <small className="bg-zinc-200 py-1 px-2 rounded-lg ml-1">
+                                      { product.variantTitle }
+                                    </small>
+                                  )
+                                }  
+                              </span>
+                              <span className="block border-t border-zinc-300 mt-2 pt-2">
+                                SKU: { product.sku }
+                              </span>
+                              <span className="block">
+                                UPC: { product.upc }
+                              </span>
+                            </td>
+                            <td className="text-center">
+                              <span>{ product.total_quantity }</span>
+                            </td>
+                            <td className="text-center">
+                              <span className={`${!product.htsus && 'text-red-500'}`}>{ product.htsus ? product.htsus : "inconnu" }</span>
+                            </td>
+                            {/* <td className="text-center">
+                              <span>{ product.sold_quantity }</span>
+                            </td> */}
+                            <td className="text-center">
+                              <span className={`${!product.htsus && 'text-red-500'}`}>
+                                {
+                                  showRemainingQty(product)
+                                }
+                              </span>
                               <button
-                                className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm"
-                                onClick={() => binRestocked(product)}>
-                                Bin remplie
-                                <ArchiveBoxArrowDownIcon className="ml-2 inline h-4 w-4" />
+                                className="block text-sky-600 underline mt-2 text-sm mx-auto cursor-pointer"
+                                onClick={() => updateRemainingQty(product)}>
+                                <small>Corriger la valeur</small>
                               </button>
-                            </div>
-                          </td>
-                        </tr>
+                            </td>
+                            <td className="text-center">
+                              <div className="flex flex-col gap-2 py-2">
+                                {
+                                  typeof product.bin_location === 'string' ? 
+                                    JSON.parse(product.bin_location).map((bin:string, idx:number) => (
+                                      <span
+                                        key={idx}
+                                        className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">
+                                        { bin }
+                                      </span>
+                                  )) : Array.isArray(product.bin_location) ?
+                                  product.bin_location.map((bin, idx) => (
+                                    <span key={idx} className="p-2 bg-[#e4e5e7] inline-block h-fit rounded-md font-sans">{ bin }</span>
+                                  ))
+                                  :
+                                  <span>{ product.bin_location }</span>
+                                }
+                              </div>
+                            </td>
+                            <td className="text-center">
+                              <div className="flex flex-col items-center justify-center py-2 gap-4">
+                                <BinStatus
+                                  percentage={product.remaining_quantity ? Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) : 0}
+                                  totalQty={product.total_quantity ?? 0}
+                                  htsus={Number(product.htsus ?? 0)}
+                                  remainingQty={product.remaining_quantity ?? 0}
+                                />
+                                <button
+                                  className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm"
+                                  onClick={() => binRestocked(product)}>
+                                  Bin remplie
+                                  <ArchiveBoxArrowDownIcon className="ml-2 inline h-4 w-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
                       ))
                     }
                   </tbody>

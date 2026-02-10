@@ -18,18 +18,41 @@
   display: none;
 }
 
-@keyframes highlightAnimation {
+.product-row-item.highlight td {
+  position: relative;
+}
+
+.product-row-item.highlight td span {
+  z-index: 1;
+  position: relative;
+}
+
+@keyframes highlighttransition {
   0% {
-    background-color: #ffffff;
+    transform: scale(1);
+    opacity: 1;
   }
-  50% {
-    background-color: #81ffee;
-  }
+
   100% {
-    background-color: #ffffff;
+    transform: scaleY(1.2);
+    opacity: 0;
   }
 }
 
-.product-row-item.highlight {
-  animation: highlightAnimation 1.5s ease-in-out infinite;
+.product-row-item.highlight td:first-child:before,
+.product-row-item.highlight td:first-child:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 600%;
+  height: 100%;
+  background: transparent;
+  border: 5px solid rgb(47, 222, 235);
+  z-index: 0;
+  animation: highlighttransition 1.5s ease-in-out infinite;
+}
+
+.product-row-item.highlight td:first-child:after {
+  animation: highlighttransition 1.5s ease-in-out 0.5s infinite;
 }

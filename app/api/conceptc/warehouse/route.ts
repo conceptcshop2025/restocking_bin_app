@@ -44,7 +44,8 @@ export async function POST(req: Request) {
         htsus,
         image_url,
         remaining_quantity,
-        total_quantity
+        total_quantity,
+        variant_title
       )
       SELECT *
       FROM UNNEST(
@@ -56,7 +57,8 @@ export async function POST(req: Request) {
         ${products.map(p => p.htsus ?? null)}::text[],
         ${products.map(p => p.image_url ?? null)}::text[],
         ${products.map(p => p.remaining_quantity ?? 0)}::int[],
-        ${products.map(p => p.total_quantity ?? 0)}::int[]
+        ${products.map(p => p.total_quantity ?? 0)}::int[],
+        ${products.map(p => p.variantTitle ?? null)}::text[]
       )
       RETURNING id;
     `;
@@ -100,7 +102,8 @@ export async function PUT(req: Request) {
         htsus,
         image_url,
         remaining_quantity,
-        total_quantity
+        total_quantity,
+        variant_title
       )
       SELECT *
       FROM UNNEST(
@@ -137,7 +140,8 @@ export async function PUT(req: Request) {
         ${products.map(p => p.htsus ?? null)}::text[],
         ${products.map(p => p.image_url ?? null)}::text[],
         ${products.map(p => p.remaining_quantity ?? 0)}::int[],
-        ${products.map(p => p.total_quantity ?? 0)}::int[]
+        ${products.map(p => p.total_quantity ?? 0)}::int[],
+        ${products.map(p => p.variantTitle ?? null)}::text[]
       )
       ON CONFLICT (sku) DO UPDATE SET
         title = EXCLUDED.title,
@@ -147,7 +151,8 @@ export async function PUT(req: Request) {
         htsus = EXCLUDED.htsus,
         image_url = EXCLUDED.image_url,
         remaining_quantity = EXCLUDED.remaining_quantity,
-        total_quantity = EXCLUDED.total_quantity
+        total_quantity = EXCLUDED.total_quantity,
+        variant_title = EXCLUDED.variant_title
       RETURNING id, sku;
     `;
 
@@ -191,7 +196,8 @@ export async function PATCH(req: Request) {
         htsus,
         image_url,
         remaining_quantity,
-        total_quantity
+        total_quantity,
+        variant_title
       )
       SELECT *
       FROM UNNEST(
@@ -205,7 +211,8 @@ export async function PATCH(req: Request) {
         ${products.map(p => p.htsus ?? null)}::text[],
         ${products.map(p => p.image_url ?? null)}::text[],
         ${products.map(p => p.remaining_quantity ?? 0)}::int[],
-        ${products.map(p => p.total_quantity ?? 0)}::int[]
+        ${products.map(p => p.total_quantity ?? 0)}::int[],
+        ${products.map(p => p.variantTitle ?? null)}::text[]
       )
       ON CONFLICT (sku) DO UPDATE SET
         title = EXCLUDED.title,
@@ -215,7 +222,8 @@ export async function PATCH(req: Request) {
         htsus = EXCLUDED.htsus,
         image_url = EXCLUDED.image_url,
         remaining_quantity = EXCLUDED.remaining_quantity,
-        total_quantity = EXCLUDED.total_quantity
+        total_quantity = EXCLUDED.total_quantity,
+        variant_title = EXCLUDED.variant_title
       RETURNING id, sku;
     `;
 
