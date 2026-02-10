@@ -76,4 +76,7 @@ export type ProductSold = {
 
 export type BinStatusProps = {
   percentage: number;
+  totalQty: number;
+  htsus: number;
+  remainingQty: number;
 }

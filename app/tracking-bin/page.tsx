@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.5.1";
+  const appVersion = "2.6.1";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -607,7 +607,11 @@ export default function TrackingBinPage() {
                           <td className="text-center">
                             <div className="flex flex-col items-center justify-center py-2 gap-4">
                               <BinStatus
-                                percentage={product.remaining_quantity ? Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) : 0} />
+                                percentage={product.remaining_quantity ? Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) : 0}
+                                totalQty={product.total_quantity ?? 0}
+                                htsus={Number(product.htsus ?? 0)}
+                                remainingQty={product.remaining_quantity ?? 0}
+                              />
                               <button
                                 className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm"
                                 onClick={() => binRestocked(product)}>
