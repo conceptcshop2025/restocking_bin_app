@@ -355,10 +355,12 @@ export default function TrackingBinPage() {
 
 
   // set filter class
-  function setFilterClass(htsus: string | null, remaining_quantity: string | number | undefined) {
-    const total = Number(htsus) || 1;
-    const remaining = Number(remaining_quantity) || 0;
-    const percent = (remaining / total) * 100;
+  function setFilterClass(htsus: string | null, remaining_quantity: string | number | undefined, totalQty: number | undefined) {
+    const totalHtsus = Number(htsus) || 1;
+    const remaining = Number(remaining_quantity) || 0; 
+    const totalQuantity = Number(totalQty) || 0;
+
+    const percent = (remaining / (totalQuantity <= totalHtsus ? totalQuantity : totalHtsus)) * 100;
 
     if(!htsus) {
       return 'unknown';
@@ -563,7 +565,7 @@ export default function TrackingBinPage() {
                         (product.total_quantity ?? 0) > 0 && (
                           <tr
                             key={index}
-                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity) }`}>
+                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity, product.total_quantity) }`}>
                             <td className="p-4 text-sm font-semibold">
                               <span className="h-[128px] block">
                                 {
