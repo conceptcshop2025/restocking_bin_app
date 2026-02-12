@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.7.4";
+  const appVersion = "2.8.4";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -330,21 +330,37 @@ export default function TrackingBinPage() {
   // Reorder product list by bin percentage
   function reorderProductList(productList: ProductSold[] = []) {
     return [...productList].sort((a, b) => {
-      const aTotal = Number(a.htsus) || 1;
-      const bTotal = Number(b.htsus) || 1;
+      const aHtsus = Number(a.htsus) || 0;
+      const bHtsus = Number(b.htsus) || 0;
 
-      const aPercent = (Number(a.remaining_quantity) || 0) / aTotal;
-      const bPercent = (Number(b.remaining_quantity) || 0) / bTotal;
+      const aTotalQuantity = Number(a.total_quantity) || 0;
+      const bTotalQuantity = Number(b.total_quantity) || 0;
+
+      const aBaseTotal =
+        aTotalQuantity > 0 && aTotalQuantity <= aHtsus
+          ? aTotalQuantity
+          : aHtsus || 1;
+
+      const bBaseTotal =
+        bTotalQuantity > 0 && bTotalQuantity <= bHtsus
+          ? bTotalQuantity
+          : bHtsus || 1;
+
+      const aPercent = (Number(a.remaining_quantity) || 0) / aBaseTotal;
+      const bPercent = (Number(b.remaining_quantity) || 0) / bBaseTotal;
 
       return aPercent - bPercent;
     });
   }
 
+
   // set filter class
-  function setFilterClass(htsus: string | null, remaining_quantity: string | number | undefined) {
-    const total = Number(htsus) || 1;
-    const remaining = Number(remaining_quantity) || 0;
-    const percent = (remaining / total) * 100;
+  function setFilterClass(htsus: string | null, remaining_quantity: string | number | undefined, totalQty: number | undefined) {
+    const totalHtsus = Number(htsus) || 1;
+    const remaining = Number(remaining_quantity) || 0; 
+    const totalQuantity = Number(totalQty) || 0;
+
+    const percent = (remaining / (totalQuantity <= totalHtsus ? totalQuantity : totalHtsus)) * 100;
 
     if(!htsus) {
       return 'unknown';
@@ -549,14 +565,14 @@ export default function TrackingBinPage() {
                         (product.total_quantity ?? 0) > 0 && (
                           <tr
                             key={index}
-                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity) }`}>
+                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity, product.total_quantity) }`}>
                             <td className="p-4 text-sm font-semibold">
                               <span className="h-[128px] block">
                                 {
                                   product.image_url.length > 0 &&
                                   <Image
                                     src={product.image_url}
-                                    alt={product.title}
+                                    alt={product.title ? product.title : 'Image du produit'}
                                     width={100}
                                     height={60}
                                     style={{width: 'auto'}} />
