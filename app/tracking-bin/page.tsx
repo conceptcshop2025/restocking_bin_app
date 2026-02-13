@@ -14,7 +14,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 
 export default function TrackingBinPage() {
-  const appVersion = "2.8.4";
+  const appVersion = "2.9.4";
   const MySwal = withReactContent(Swal);
   const [productSoldList, setProductSoldList] = useState<ProductSold[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -23,6 +23,7 @@ export default function TrackingBinPage() {
   const [sortBy, setSortBy] = useState<string>('percentage');
   const [searchInput, setSearchInput] = useState<string>('');
   const [debouncedSearchInput, setDebouncedSearchInput] = useState<string>(searchInput);
+  const [lastChangedProduct, setLastChangedProduct] = useState<ProductSold | null>(null);
 
   function initToast(content:ToastProps | null) {
     setShowToast(content);
@@ -285,6 +286,9 @@ export default function TrackingBinPage() {
       cancelButtonText: "Annuler"
     }).then(async (result) => {
       if (result.isConfirmed) {
+
+        const previousValueProduct = { ...product };
+        setLastChangedProduct(previousValueProduct);
       
         product.remaining_quantity = product.htsus ? Number(product.htsus) : 0;
         product.sold_quantity = '0';
@@ -431,7 +435,9 @@ export default function TrackingBinPage() {
   }
 
   //update remaining quantity
-  function updateRemainingQty(product: ProductSold) {
+  function updateRemainingQty(product: ProductSold, e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    const target = e.target as HTMLElement;
+    const parentTarget = target.closest('.product-row-item');
     MySwal.fire({
       title: `Mettre à jour la quantité restante pour le produit SKU: ${product.sku}`,
       input: 'number',
@@ -451,6 +457,10 @@ export default function TrackingBinPage() {
       }
     }).then(async (result) => {
       if (result.isConfirmed) {
+        
+        const previousValueProduct = { ...product };
+        setLastChangedProduct(previousValueProduct);
+
         const newQty = result.value;
         product.remaining_quantity = newQty;
         const updatedProducts = productSoldList.map(p => {
@@ -461,6 +471,7 @@ export default function TrackingBinPage() {
         });
         setProductSoldList(updatedProducts);
         syncProductListToWarehouse([product]);
+        parentTarget?.classList.add('checked-product');
       }
     });
   }
@@ -477,6 +488,24 @@ export default function TrackingBinPage() {
     } 
 
     return `${remainingValue}${percentageValue !== "" && !isNaN(Number(percentageValue)) && Number(percentageValue) !== Infinity ? ` (${percentageValue}%)` : ''}`;
+  }
+
+  // cancel last change on product
+  function cancelProductChange(product: HTMLButtonElement) {
+    const findProduct = productSoldList.find(p => p.sku === lastChangedProduct?.sku);
+    if (findProduct) {
+      findProduct.remaining_quantity = lastChangedProduct?.remaining_quantity ?? findProduct.remaining_quantity;
+      const updatedProducts = productSoldList.map(p => {
+        if (findProduct.sku === p.sku) {
+          return { ...findProduct };
+        }
+        return p;
+      });
+      setProductSoldList(updatedProducts);
+      syncProductListToWarehouse([findProduct]);
+      product.closest('.product-row-item')?.classList.remove('checked-product');
+      setLastChangedProduct(null);
+    }
   }
 
   return (
@@ -565,7 +594,7 @@ export default function TrackingBinPage() {
                         (product.total_quantity ?? 0) > 0 && (
                           <tr
                             key={index}
-                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'bg-green-100' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity, product.total_quantity) }`}>
+                            className={`product-row-item font-bold border-b-2 border-zinc-300 item--${index} ${ product.sold_quantity === '0' && product.htsus === product.remaining_quantity?.toString() ? 'checked-product' : '' } ${ setFilterClass(product.htsus, product.remaining_quantity, product.total_quantity) }`}>
                             <td className="p-4 text-sm font-semibold">
                               <span className="h-[128px] block">
                                 {
@@ -612,7 +641,7 @@ export default function TrackingBinPage() {
                               </span>
                               <button
                                 className="block text-sky-600 underline mt-2 text-sm mx-auto cursor-pointer"
-                                onClick={() => updateRemainingQty(product)}>
+                                onClick={(e) => updateRemainingQty(product, e)}>
                                 <small>Corriger la valeur</small>
                               </button>
                             </td>
@@ -636,7 +665,7 @@ export default function TrackingBinPage() {
                               </div>
                             </td>
                             <td className="text-center">
-                              <div className="flex flex-col items-center justify-center py-2 gap-4">
+                              <div className="flex flex-col items-center justify-center py-2 px-4 gap-4">
                                 <BinStatus
                                   percentage={product.remaining_quantity ? Math.round(((Number(product.remaining_quantity) ?? 0) / Number(product.htsus) * 100)) : 0}
                                   totalQty={product.total_quantity ?? 0}
@@ -644,11 +673,20 @@ export default function TrackingBinPage() {
                                   remainingQty={product.remaining_quantity ?? 0}
                                 />
                                 <button
-                                  className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm"
+                                  className="bg-green-600 text-neutral-50 py-2 px-4 rounded-lg hover:bg-green-800 ease-in-out duration-300 cursor-pointer text-sm w-full"
                                   onClick={() => binRestocked(product)}>
                                   Bin remplie
                                   <ArchiveBoxArrowDownIcon className="ml-2 inline h-4 w-4" />
                                 </button>
+                                {
+                                  lastChangedProduct?.sku === product.sku && (
+                                    <button
+                                      className="bg-amber-400 text-neutral-50 py-2 px-4 rounded-lg hover:bg-amber-600 ease-in-out duration-300 cursor-pointer text-sm w-full"
+                                      onClick={(e) => cancelProductChange(e.currentTarget)}>
+                                      Annuler changement
+                                    </button>
+                                  )
+                                }
                               </div>
                             </td>
                           </tr>

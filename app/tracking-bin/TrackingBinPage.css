@@ -56,3 +56,7 @@
 .product-row-item.highlight td:first-child:after {
   animation: highlighttransition 1.5s ease-in-out 0.5s infinite;
 }
+
+.checked-product {
+  background-color: #39d93b;
+}
