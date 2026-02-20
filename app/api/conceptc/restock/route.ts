@@ -3,6 +3,31 @@ import { NextResponse } from "next/server";
 
 const sql = neon(process.env.DATABASE_URL || "");
 
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const sku = searchParams.get('sku');
+
+    if (!sku) {
+      return NextResponse.json({ error: "SKU is required" }, { status: 400 });
+    }
+
+    const result = await sql`
+      SELECT remaining_quantity
+      FROM warehouse_products
+      WHERE sku = ${sku}
+      LIMIT 1;
+    `;
+
+    return NextResponse.json({ data: result[0] ?? null }, { status: 200 });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error", details: String(error) },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
