@@ -12,7 +12,7 @@ import { TrashIcon, ArrowUturnLeftIcon } from "@heroicons/react/16/solid";
 import CsvImport from "../components/CsvImport/CsvImport";
 
 export default function Home() {
-  const appVersion:string = "5.0.0";
+  const appVersion:string = "5.1.0";
   const [upc, setUpc] = useState<string>("");
   const [debouncedUpc, setDebouncedUpc] = useState<string>("");
   const [productList, setProductList] = useState<Array<Product>>([]);
@@ -126,10 +126,13 @@ export default function Home() {
           imageUrl: data.data[0].imageURL || "",
           restocked: false,
           bAlias: data.data[0].barcodeAliases || [],
+          qtyInBin: 0,
         };
 
         setProductList(prevList => [...prevList, newProduct]);
       }
+
+      getBinCapaity(data.data[0].sku);
 
       setTimeout(() => {
         latestAddedProduct(data.data[0].barcode);
@@ -343,6 +346,26 @@ export default function Home() {
     }
   }
 
+  // get bin capacity from Neon DB
+  async function getBinCapaity(sku: string) {
+    try {
+      const response = await fetch(`/api/conceptc/restock?sku=${encodeURIComponent(sku)}`);
+      const data = await response.json();
+
+      if (data.data && data.data.remaining_quantity !== undefined) {
+        setProductList(prevList =>
+          prevList.map(product =>
+            product.sku === sku
+              ? { ...product, qtyInBin: data.data.remaining_quantity }
+              : product
+          )
+        );
+      }
+    } catch {
+      // bin capacity is supplementary info — fail silently
+    }
+  }
+
   return (
     <div>
       <main>
@@ -425,6 +448,7 @@ export default function Home() {
                         <th className="text-center py-6">Qty reservé</th>
                         <th className="text-center py-6">QTY à approv...</th>
                         <th className="text-center py-6">HTSUS</th>
+                        <th className="text-center py-6">Qty dans Bin</th>
                         <th className="text-center py-6">Bin</th>
                         <th className="text-center py-6">Statut</th>
                       </tr>
@@ -505,6 +529,7 @@ export default function Home() {
                             </span>
                           </td>
                           <td className="text-center">{product.htsus || "N/A"}</td>
+                          <td className="text-center">{product.qtyInBin !== undefined ? product.qtyInBin : "N/A"}</td>
                           <td>
                             <div className="flex flex-wrap gap-2">
                               {

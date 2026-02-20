@@ -10,6 +10,7 @@ export type Product = {
   imageUrl: string;
   restocked: boolean;
   bAlias: string[] | null;
+  qtyInBin?: number;
 }
 
 export type ModalContent = {
