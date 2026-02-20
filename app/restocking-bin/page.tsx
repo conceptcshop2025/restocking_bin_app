@@ -297,7 +297,7 @@ export default function Home() {
     setContentModal({
       content: <BinValidator
         productUpc={productUpc}
-        productQuantity={productQuantity}
+        productQuantity={1}
         binLocations={binLocations}
         productItem={productItem}
         bAlias={bAlias}
